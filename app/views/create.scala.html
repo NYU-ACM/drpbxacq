@@ -1,0 +1,33 @@
+@(keyForm: Form[User], url: String)
+@import helper._
+@import helper.twitterBootstrap._
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>DRPBXCQ</title>
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    <link href="@routes.Assets.at("stylesheets/main.css")" rel="stylesheet">
+  </head>
+  <body>
+     @form(routes.Application.save()) {
+      <div class="form-signin">
+        <div class="text-center">
+          <h2 class="form-signin-heading">DRPBXACQ<h2>
+          <h4>1.) <a href="@url" target="_blank">Get a Dropbox Token</a></h4>
+          <br>
+          <h4>2.) Register w/ drpbxacq
+          <br><br>
+        </div>
+        <fieldset>
+          @inputText(keyForm("email"), '_label -> "email")
+          @inputPassword(keyForm("password"), '_label -> "password")
+          @inputText(keyForm("token"), '_label -> "token") 
+        </fieldset>   
+        <button class="btn btn-lg btn-primary text-center" type="submit">Register</button>
+        <br>
+        <div style="position:relative;" class="text-center">or, <a href="/">login</a></div>
+      </div>
+    }
+  </body>
+</html>

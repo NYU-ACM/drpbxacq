@@ -1,0 +1,25 @@
+@(loginForm: Form[Login])
+<!DOCTYPE html>
+<html>
+    <head>
+      <title>DRPBXCQ</title>
+      <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+      <link href="@routes.Assets.at("stylesheets/main.css")" rel="stylesheet">
+    </head>
+    <body>
+      <form class="form-signin" role="form" action="/user" method="post">
+        <h2 class="form-signin-heading text-center">DRPBXACQ</h2>
+        <div class="form-group">
+          <label>email</label>
+          <input type="email" class="form-control" name="email" required autofocus>
+        </div>
+        <div class="form-group">
+          <label>password</label>
+          <input type="password" class="form-control" name="password" required>   
+        </div>        
+        <button class="btn btn-lg btn-primary" type="submit">Sign in</button>
+        <br>
+        <div class="text-center">or<br><a href="/user/create">register</a></div>
+      </form>
+    </body>
+</html>

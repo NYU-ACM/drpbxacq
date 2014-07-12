@@ -1,0 +1,29 @@
+@(listing: java.util.List[com.dropbox.core.DbxEntry], entry: com.dropbox.core.DbxEntry)
+@main("DRPBXACQ"){
+ 
+  <br />
+  <h2>Start A Transfer</h2>
+  <table class="table table-striped">
+    <tr>
+      <th width="90%">name</th>
+      <th/>
+    </tr>
+    @for(dbx_entry <- listing){
+      <tr>
+	@if(dbx_entry.isFile){
+	  <td>@dbx_entry.name</td><td/>
+	}
+	@if(dbx_entry.isFolder){
+	  @defining(new String(new sun.misc.BASE64Encoder().encodeBuffer(dbx_entry.path.getBytes))) { message =>
+	    <td><b>@dbx_entry.path</b></td>
+	    <td>
+	      <a href="/entry/@message">
+		<button class="btn btn-primary">transfer</button>
+	      </a>
+	    </td>
+	  }
+	}
+      </tr>
+    }
+  </table>
+}
