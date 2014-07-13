@@ -1,16 +1,17 @@
 @(path: String, dirs: Map[String, Vector[Entry]])
+@import java.util.UUID
 
 @main("DRPBXACQ"){
   <p>Uncheck any files to remove them from the transfer</p>
   <div class="lead"><strong>@path</strong></div></br>
   
-  <form class="form-dbxentry">
+  <form class="form-dbxentry" method="post" action="/transfer">
     @for(dir <- dirs){
       <div class="lead">@dir._1</div><br/>
         <table class="table table-striped">
         @for(entry <- dir._2){
           <tr>
-            <td width="3%"><input type="checkbox" checked></td>
+            <td width="3%"><input type="checkbox" name="files[]" value="@entry.path" checked></td>
             <td width="50%"><strong>@entry.filename</strong>
             <td width="10%">@entry.humanSize</td>
             <td>@entry.mDate</td>

@@ -7,6 +7,7 @@ import play.api.data.Forms._
 import play.api.db.slick._
 import play.api.Play.current
 
+
 import com.dropbox.core._
 import java.util.Locale
 import java.security.MessageDigest
@@ -69,35 +70,6 @@ object Application extends Controller {
         Redirect(routes.Application.user).withSession("token" -> user2.token)
       }
     )
-  }
-
-  def entry(path: String) = Action{ request =>
-    val decodedPath = new String(new sun.misc.BASE64Decoder().decodeBuffer(path))
-    val client = new DbxClient(dbConfig, request.session.get("token").get)
-    val entries = getEntryMap(decodedPath, client)
-    Ok(views.html.entry(decodedPath, entries))
-  }
-
-
-  def getEntryMap(path: String, client: DbxClient): Map[String, Vector[Entry]] = {
-    import scala.collection.JavaConversions._
-    var dirs = Map.empty[String, Vector[Entry]]
-    val listing = client.getMetadataWithChildren(path)
-    var files = Vector.empty[Entry]
-    
-    listing.children.foreach{ entry => 
-      if(entry.isFile){
-        val e = new Entry(entry.asFile.name, entry.asFile.path, entry.asFile.humanSize, entry.asFile.numBytes, entry.asFile.lastModified) 
-        files = files ++ Vector(e)
-       }   
-      
-      if(entry.isFolder){
-        dirs = dirs ++ getEntryMap(entry.path, client)   
-      }
-    }
-    
-    if(!files.isEmpty) dirs = dirs ++ Map(path -> files)
-    dirs
   }
 
   /**

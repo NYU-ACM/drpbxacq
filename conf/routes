@@ -18,7 +18,9 @@ GET    /user		        controllers.Application.user
 GET    /user/authenticate	controllers.Application.validateLogin(email: String, hash: String)
 
 # Entry Stuff
-GET	/entry/:path			controllers.Application.entry(path:String)		
+GET	/entry/:path			controllers.Transfer.entry(path:String)	
+
+POST /transfer 				controllers.Transfer.transfer	
 
 # Map static resources from the /public folder to the /assets URL path
 
