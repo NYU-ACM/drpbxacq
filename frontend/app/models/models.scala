@@ -7,7 +7,7 @@ import java.util.{UUID}
 
 case class User(id: Option[Long], email: String, passMd5: String, token:String)
 case class Login(email: String, password: String)
-case class File(id: UUID, transferId: UUID, filename: String, path: String, humanSize: String, size: Long, modDate: java.sql.Date, status: String)
+case class File(id: UUID, userId: Long, transferId: UUID, filename: String, path: String, humanSize: String, size: Long, modDate: java.sql.Date, status: String)
 case class Entry(filename: String, path: String, humanSize: String, size: Long, mDate: java.util.Date)
 
 class Users(tag: Tag) extends Table[User](tag, "USERS") {
@@ -25,6 +25,11 @@ object Users {
     users.insert(user)
   }
 
+  def findByEmail(email: String)(implicit s: Session): User = {
+    users.filter(_.email === email).list.head
+
+  }
+
   def findById(uid: Long)(implicit s: Session): User = { 
     users.filter(_.id === uid).list.head
   }
@@ -32,16 +37,15 @@ object Users {
   def count(implicit s: Session): Int = Query(users.length).first
 
   def validateLogin(email: String, hash: String)(implicit s: Session): Option[User] = {
-
     val user = users.filter(_.email === email).list.head
     val code = new String(new sun.misc.BASE64Encoder().encodeBuffer(hash.getBytes))
-
     if(code == user.passMd5) Some(user) else None
   }
 }
 
 class Files(tag: Tag) extends Table[File](tag, "FILES") {
   def id = column[UUID]("ID", O.PrimaryKey)
+  def userId = column[Long]("USER_ID", O.NotNull)
   def transId = column[UUID]("TRANS_ID", O.NotNull)
   def filename = column[String]("FILENAME", O.NotNull)
   def path = column[String]("PATH", O.NotNull)
@@ -49,11 +53,13 @@ class Files(tag: Tag) extends Table[File](tag, "FILES") {
   def size = column[Long]("SIZE", O.NotNull)
   def modDate = column[java.sql.Date]("MOD_DATE", O.NotNull)
   def status = column[String]("STATUS", O.NotNull)
-  def * = (id, transId, filename, path, humanSize, size, modDate, status) <> (File.tupled, File.unapply _)
+  def * = (id, userId, transId, filename, path, humanSize, size, modDate, status) <> (File.tupled, File.unapply _)
+  def account = foreignKey("ACC_FK", userId, Files.users)(_.id)
 }
 
 object Files {
   val files = TableQuery[Files]
+  val users = TableQuery[Users]
 
   def insert(file: File)(implicit s: Session) {
     files.insert(file)

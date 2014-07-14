@@ -17,8 +17,11 @@ GET    /user		        controllers.Application.user
 
 GET    /user/authenticate	controllers.Application.validateLogin(email: String, hash: String)
 
+GET	   /user/transfer		controllers.Application.transfer
+
 # Entry Stuff
-GET	/entry/:path			controllers.Transfer.entry(path:String)	
+
+GET	   /entry/:path			controllers.Transfer.entry(path: String)
 
 POST /transfer 				controllers.Transfer.transfer	
 

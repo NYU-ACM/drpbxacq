@@ -41,22 +41,28 @@ object Application extends Controller {
 
   def validateLogin(email: String, hash: String) = DBAction { implicit rs =>
     Users.validateLogin(email, hash) match {
-      case Some(user) => Redirect(routes.Application.user).withSession("token" -> user.token)
+      case Some(user) => Redirect(routes.Application.user).withSession("email" -> user.email)
       case None => Redirect(routes.Application.index)
     }
   }
 
   def user = Action { request =>
-    request.session.get("token") match {
-      case Some(token) => {    
-        val client = new DbxClient(dbConfig, token)
+    request.session.get("email") match {
+      case Some(user) => Ok(views.html.home())
+      case None => Redirect(routes.Application.index)
+    }
+  }
+
+  def transfer = Action { request =>
+    request.session.get("email") match {
+      case Some(email) => {
+        val user = DB.withSession{ implicit session => Users.findByEmail(email)}
+        val client = new DbxClient(dbConfig, user.token)
         val listing = client.getMetadataWithChildren("/")
         Ok(views.html.user(listing.children, listing.entry))
-      }
-      case None => {
-        Redirect(routes.Application.index)
       } 
-    }
+      case None => Redirect(routes.Application.index)
+    } 
   }
 
   def save = DBAction { implicit rs =>
