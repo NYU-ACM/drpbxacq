@@ -26,12 +26,14 @@ object Transfer extends Controller {
     request.session.get("email") match {
       case Some(email) => {
         val user = DB.withSession{ implicit session => Users.findByEmail(email)}
-        val transUUID = UUID.randomUUID
+        val xferUUID = UUID.randomUUID
         val client = new DbxClient(dbConfig, user.token)
         var files = Vector.empty[File]
+        val now = new java.sql.Date(new java.util.Date().getTime())
         DB.withSession{ implicit session =>
+          Transfers.insert(new Transfer(xferUUID, user.id.get, now))
           paths.foreach{path =>
-            Files.insert(getFile(transUUID, user.id.get, path, client))
+            Files.insert(getFile(xferUUID, user.id.get, path, client))
           }
         }
         Redirect(routes.Application.user)
@@ -77,5 +79,16 @@ object Transfer extends Controller {
     
     if(!files.isEmpty) dirs = dirs ++ Map(path -> files)
     dirs
+  }
+
+  def show(uuid: String) = Action{ request =>
+    request.session.get("email") match {
+      case Some(email) => {
+        val user = DB.withSession{ implicit session => Users.findByEmail(email)}
+        val files = DB.withSession{ implicit session => Files.getFilesByTransferId(UUID.fromString(uuid))}
+        Ok(views.html.show(files, uuid))
+      }  
+      case None => Redirect(routes.Application.index)
+    }
   }
 }

@@ -3,25 +3,31 @@
 # ~~~~
 
 # User Stuff
-GET    /					controllers.Application.index
+GET    	/					controllers.Application.index
 
-POST   /user				controllers.Application.login
+POST   	/user				controllers.Application.login
 
-GET    /user/create			controllers.Application.create
+GET    	/user/create		controllers.Application.create
 
-POST   /user/save			controllers.Application.save
+POST   	/user/save			controllers.Application.save
 
-GET    /user/logout			controllers.Application.logout
+GET    	/user/logout		controllers.Application.logout
 
-GET    /user		        controllers.Application.user
+GET    	/user		        controllers.Application.user
 
-GET    /user/authenticate	controllers.Application.validateLogin(email: String, hash: String)
+GET    	/user/authenticate	controllers.Application.validateLogin(email: String, hash: String)
 
-GET	   /user/transfer		controllers.Application.transfer
+GET	   	/user/transfer		controllers.Application.transfer
+
+GET		/transfers			controllers.Application.transfers
+
+
 
 # Entry Stuff
 
-GET	   /entry/:path			controllers.Transfer.entry(path: String)
+GET	   	/entry/:path		controllers.Transfer.entry(path: String)
+
+GET		/transfer/:uuid		controllers.Transfer.show(uuid: String)
 
 POST /transfer 				controllers.Transfer.transfer	
 

@@ -53,6 +53,16 @@ object Application extends Controller {
     }
   }
 
+  def transfers = Action { request =>
+    request.session.get("email") match {
+      case Some(email) => {  
+        val user = DB.withSession{ implicit session => Users.findByEmail(email) }
+        val transfers = DB.withSession{ implicit session => Transfers.getTransfersByUserId(user.id.get)}
+        Ok(views.html.transfers(transfers))
+      } 
+      case None => Redirect(routes.Application.index)
+    }
+  }
   def transfer = Action { request =>
     request.session.get("email") match {
       case Some(email) => {

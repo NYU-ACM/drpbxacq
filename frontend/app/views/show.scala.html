@@ -1,0 +1,21 @@
+@(files: Vector[models.File], uuid: String)
+
+@main("DRPBXACQ") {
+  <h2>@uuid</h2>
+  <div class="form-dbxentry">
+  <table class="table">
+  	<tr>
+  	  <th>name</th>
+	  <th>size</th>
+	  <th>status</th>
+  	</tr>
+    @for(file <- files){
+      <tr>
+      	<td>@file.filename</td>
+      	<td>@file.humanSize</td>
+      	<td>@file.status</td>
+      </tr>
+    }
+  </table>
+  </div>
+}
