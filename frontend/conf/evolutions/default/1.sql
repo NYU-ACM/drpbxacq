@@ -1,0 +1,13 @@
+# --- Created by Slick DDL
+# To stop Slick DDL generation, remove this comment and start using Evolutions
+
+# --- !Ups
+
+create table "FILES" ("ID" UUID NOT NULL PRIMARY KEY,"FILENAME" VARCHAR(254) NOT NULL,"PATH" VARCHAR(254) NOT NULL,"HUMAN_SIZE" VARCHAR(254) NOT NULL,"SIZE" BIGINT NOT NULL,"MOD_DATE" TIMESTAMP NOT NULL,"STATUS" VARCHAR(254) NOT NULL);
+create table "USERS" ("ID" SERIAL NOT NULL PRIMARY KEY,"EMAIL" VARCHAR(254) NOT NULL,"PASSMD5" VARCHAR(254) NOT NULL,"TOKEN" VARCHAR(254) NOT NULL);
+
+# --- !Downs
+
+drop table "FILES";
+drop table "USERS";
+

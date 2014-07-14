@@ -30,8 +30,13 @@ object Transfer extends Controller {
           Ok(Json.toJson(obj))
         }
       case None => Redirect(routes.Application.index)
-    }
-    
+    } 
+  }
+
+  def getFile(path: String, token: String): File = {
+    val client = new DbxClient(dbConfig, token)
+    val md = client.getMetadata(path).asFile
+    new File(UUID.randomUUID, md.name, path, md.humanSize, md.numBytes, new java.sql.Date(md.lastModified.getTime), "Queued")
   }
 
   def entry(path: String) = Action{ request =>
