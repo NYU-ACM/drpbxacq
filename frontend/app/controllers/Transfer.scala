@@ -22,21 +22,24 @@ object Transfer extends Controller {
   val dbConfig = new DbxRequestConfig("DLTS", Locale.getDefault().toString)
   
   def transfer = Action { request =>
+    val transUUID = UUID.randomUUID
+    val client = new DbxClient(dbConfig, request.session.get("token").get)
+    var files = Vector.empty[File]
     request.body.asFormUrlEncoded match {
       case Some(form) => {
-          val obj = Json.obj("id" -> UUID.randomUUID.toString,
-            "files" -> form.get("files[]")
-          )
-          Ok(Json.toJson(obj))
+        println(form.get("files[]").get)
+        form.get("files[]").get.foreach{path =>
+          files = files ++ Vector(getFile(transUUID, path, client))
+        }
+          Ok(views.html.transfer(files))
         }
       case None => Redirect(routes.Application.index)
     } 
   }
 
-  def getFile(path: String, token: String): File = {
-    val client = new DbxClient(dbConfig, token)
+  def getFile(transUUID: UUID, path: String, client: DbxClient): File = {
     val md = client.getMetadata(path).asFile
-    new File(UUID.randomUUID, md.name, path, md.humanSize, md.numBytes, new java.sql.Date(md.lastModified.getTime), "Queued")
+    new File(UUID.randomUUID, transUUID, md.name, path, md.humanSize, md.numBytes, new java.sql.Date(md.lastModified.getTime), "Queued")
   }
 
   def entry(path: String) = Action{ request =>
@@ -50,7 +53,6 @@ object Transfer extends Controller {
       case None => Redirect(routes.Application.index)
     }
   }
-
 
   def getEntryMap(path: String, client: DbxClient): Map[String, Vector[Entry]] = {
     import scala.collection.JavaConversions._
