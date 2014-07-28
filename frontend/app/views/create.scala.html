@@ -10,7 +10,7 @@
     <link href="@routes.Assets.at("stylesheets/main.css")" rel="stylesheet">
   </head>
   <body>
-     @form(routes.Application.save()) {
+     @form(routes.Donor.save()) {
       <div class="form-signin">
         <div class="text-center">
           <h2 class="form-signin-heading">DRPBXACQ<h2>
@@ -21,6 +21,8 @@
         </div>
         <fieldset>
           @inputText(keyForm("email"), '_label -> "email")
+          @inputText(keyForm("name"), '_label -> "name")
+          @inputText(keyForm("org"), '_label -> "org")
           @inputPassword(keyForm("password"), '_label -> "password")
           @inputText(keyForm("token"), '_label -> "token") 
         </fieldset>   

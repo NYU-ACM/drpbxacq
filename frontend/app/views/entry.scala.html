@@ -7,17 +7,19 @@
   
   <form class="form-dbxentry" method="post" action="/transfer">
     @for(dir <- dirs){
-      <div class="lead">@dir._1</div><br/>
+      @defining(new String(new sun.misc.BASE64Encoder().encodeBuffer(dir._1.getBytes))) { message =>
+        <div class="lead"><a href="/entry/@message">@dir._1</a></div><br/>
         <table class="table table-striped">
-        @for(entry <- dir._2){
-          <tr>
-            <td width="3%"><input type="checkbox" name="files[]" value="@entry.path" checked></td>
-            <td width="50%"><strong>@entry.filename</strong>
-            <td width="10%">@entry.humanSize</td>
-            <td>@entry.mDate</td>
-          </tr>
-        }
-      </table>
+          @for(entry <- dir._2){
+            <tr>
+              <td width="3%"><input type="checkbox" name="files[]" value="@entry.path" checked></td>
+              <td width="50%"><strong>@entry.filename</strong>
+              <td width="10%">@entry.humanSize</td>
+              <td>@entry.mDate</td>
+            </tr>
+          }
+        </table>
+      }
     }
     <button class="btn btn-primary text-center" type="submit">Transfer</button>
   </form> 

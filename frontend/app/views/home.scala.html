@@ -1,4 +1,26 @@
+@(transfers: Vector[models.Transfer], user: models.User)
+
 @main("DROPBXACQ"){
-  <p><a href="/user/transfer">create transfer</a></p>
-  <p><a href="/transfers">view transfers</a></p>
+  <div class="lead">@user.name @user.org</div>
+  <a class="btn btn-primary" href="/user/transfer">create transfer</a>
+  
+  <div class="lead">transfers</div>
+  <table class="table table-striped">
+  	<thead>
+  	  <tr>
+  	  	<th>id</th>
+  	  	<th>date</th>
+  	  	<th>status</th>
+  	  </tr>
+  	</thead>
+  	<tbody>
+	  @for(transfer <- transfers){
+        <tr>
+          <td><a href="/transfer/@transfer.id">@transfer.id</a></td>
+          <td>@transfer.xferDate</td>
+          <td>@transfer.status</td>
+        </tr>
+      }
+	</tbody>
+  </table>
 }

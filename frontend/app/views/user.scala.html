@@ -15,11 +15,8 @@
 	}
 	@if(dbx_entry.isFolder){
 	  @defining(new String(new sun.misc.BASE64Encoder().encodeBuffer(dbx_entry.path.getBytes))) { message =>
-	    <td><b>@dbx_entry.path</b></td>
 	    <td>
-	      <a href="/entry/@message">
-		<button class="btn btn-primary">transfer</button>
-	      </a>
+	      <a href="/entry/@message">@dbx_entry.path</a>
 	    </td>
 	  }
 	}

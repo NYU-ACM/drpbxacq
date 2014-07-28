@@ -31,20 +31,21 @@ object Transfer extends Controller {
         var files = Vector.empty[File]
         val now = new java.sql.Date(new java.util.Date().getTime())
         DB.withSession{ implicit session =>
-          Transfers.insert(new Transfer(xferUUID, user.id.get, now))
+          Transfers.insert(new Transfer(xferUUID, user.id.get, now, "Pending Review"))
           paths.foreach{path =>
             Files.insert(getFile(xferUUID, user.id.get, path, client))
           }
         }
-        Redirect(routes.Application.user)
-      } case None => Redirect(routes.Application.index)
+        Redirect(routes.Donor.user)
+      } case None => Redirect(routes.Donor.index)
     }
   }  
 
 
   def getFile(transUUID: UUID, userId: Long, path: String, client: DbxClient): File = {
     val md = client.getMetadata(path).asFile
-    new File(UUID.randomUUID, userId, transUUID, md.name, path, md.humanSize, md.numBytes, new java.sql.Date(md.lastModified.getTime), "Queued")
+    val path2 = path.substring(0, path.length - md.name.length)
+    new File(UUID.randomUUID, userId, transUUID, md.name, path2, md.humanSize, md.numBytes, new java.sql.Date(md.lastModified.getTime), "Queued")
   }
 
   def entry(path: String) = Action{ request =>
@@ -56,7 +57,7 @@ object Transfer extends Controller {
         val entries = getEntryMap(decodedPath, client)
         Ok(views.html.entry(decodedPath, entries))
       }
-      case None => Redirect(routes.Application.index)
+      case None => Redirect(routes.Donor.index)
     }
   }
 
@@ -85,10 +86,29 @@ object Transfer extends Controller {
     request.session.get("email") match {
       case Some(email) => {
         val user = DB.withSession{ implicit session => Users.findByEmail(email)}
+        val transfer = DB.withSession { implicit session => Transfers.findTransferById(UUID.fromString(uuid))}
         val files = DB.withSession{ implicit session => Files.getFilesByTransferId(UUID.fromString(uuid))}
-        Ok(views.html.show(files, uuid))
+        val summary = summarizeFiles(files)
+        Ok(views.html.show(user, transfer, summary, files))
       }  
-      case None => Redirect(routes.Application.index)
+      case None => Redirect(routes.Donor.index)
     }
+  }
+
+  def summarizeFiles(files: Vector[File]): Map[String, Tuple2[Int, Long]] = {
+    import org.apache.commons.io.FilenameUtils
+    var fileTypes = Map.empty[String, Tuple2[Int, Long]]
+
+    files.foreach{ file =>
+      val ext = FilenameUtils.getExtension(file.filename).toLowerCase
+      if(fileTypes.contains(ext)){
+        val currentFileType = fileTypes(ext)
+        fileTypes = fileTypes - ext
+        fileTypes = fileTypes ++ Map(ext -> new Tuple2(currentFileType._1 + 1, currentFileType._2 + file.size))
+      } else {
+        fileTypes = fileTypes ++ Map(ext -> new Tuple2(1, file.size))
+      }
+    }
+    fileTypes
   }
 }

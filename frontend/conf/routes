@@ -2,28 +2,37 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-# User Stuff
-GET    	/					controllers.Application.index
+# Donor Routes
+GET    	/					controllers.Donor.index
 
-POST   	/user				controllers.Application.login
+POST   	/user				controllers.Donor.login
 
-GET    	/user/create		controllers.Application.create
+GET    	/user/create		controllers.Donor.create
 
-POST   	/user/save			controllers.Application.save
+POST   	/user/save			controllers.Donor.save
 
-GET    	/user/logout		controllers.Application.logout
+GET    	/user/logout		controllers.Donor.logout
 
-GET    	/user		        controllers.Application.user
+GET    	/user		        controllers.Donor.user
 
-GET    	/user/authenticate	controllers.Application.validateLogin(email: String, hash: String)
+GET    	/user/authenticate	controllers.Donor.validateLogin(email: String, hash: String)
 
-GET	   	/user/transfer		controllers.Application.transfer
+GET	   	/user/transfer		controllers.Donor.transfer
 
-GET		/transfers			controllers.Application.transfers
+# Admin Routes
+GET		/admin				controllers.Admin.index
 
+POST	/admin 				controllers.Admin.login
 
+GET    	/admin/authenticate	controllers.Admin.validateLogin(email: String, hash: String)
 
-# Entry Stuff
+GET     /admin/home 		controllers.Admin.home
+
+GET   	/admin/insert		controllers.Admin.insert
+
+GET    	/admin/logout		controllers.Admin.logout
+
+# Transfer Routes
 
 GET	   	/entry/:path		controllers.Transfer.entry(path: String)
 
@@ -33,4 +42,4 @@ POST /transfer 				controllers.Transfer.transfer
 
 # Map static resources from the /public folder to the /assets URL path
 
-GET     /assets/*file               	       controllers.Assets.at(path="/public", file)
+GET     /assets/*file       controllers.Assets.at(path="/public", file)
