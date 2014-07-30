@@ -35,7 +35,16 @@ object Admin extends Controller {
   }
 
   def home = Action { request =>
-  	Ok(views.html.admin.home())
+    request.session.get("email") match {
+      case Some(email) => {
+        val pendingXfers = DB.withSession{ implicit session => Transfers.getTransfersByStatus(1) } 
+        Ok(views.html.admin.home(pendingXfers))
+      }
+
+      case None => {
+        Redirect(routes.Admin.index).flashing("denied" -> "You do not have a valid session, please login")  
+      }
+    }
   }
 
   def insert = Action { 

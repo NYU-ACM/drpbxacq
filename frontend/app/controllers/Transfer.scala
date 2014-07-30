@@ -31,7 +31,7 @@ object Transfer extends Controller {
         var files = Vector.empty[File]
         val now = new java.sql.Date(new java.util.Date().getTime())
         DB.withSession{ implicit session =>
-          Transfers.insert(new Transfer(xferUUID, user.id.get, now, "Pending Review"))
+          Transfers.insert(new Transfer(xferUUID, user.id.get, now, 1))
           paths.foreach{path =>
             Files.insert(getFile(xferUUID, user.id.get, path, client))
           }

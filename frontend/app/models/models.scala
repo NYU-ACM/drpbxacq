@@ -63,13 +63,13 @@ object Users {
  * Transfers
  */
 
-case class Transfer(id: UUID, userId: Long, xferDate: java.sql.Date, status: String)
+case class Transfer(id: UUID, userId: Long, xferDate: java.sql.Date, status: Int)
 
 class Transfers(tag: Tag) extends Table[Transfer](tag, "TRANSFERS") {
   def id = column[UUID]("ID", O.PrimaryKey)
   def userId = column[Long]("USER_ID", O.NotNull)
   def xferDate = column[java.sql.Date]("XFER_DATE", O.NotNull)
-  def status = column[String]("STATUS", O.NotNull)
+  def status = column[Int]("STATUS", O.NotNull)
   def * = (id, userId, xferDate, status) <> (Transfer.tupled, Transfer.unapply _)
   def user = foreignKey("USR_FK", userId, Transfers.users)(_.id)
 }
@@ -85,6 +85,14 @@ object Transfers {
   def getTransfersByUserId(id: Long)(implicit s: Session): Vector[Transfer] = {
     var xfers = Vector.empty[Transfer]
     transfers.filter(_.userId === id).list.foreach{ xfer => xfers = xfers ++ Vector(xfer) } 
+    xfers
+  }
+
+  def getTransfersByStatus(id: Int)(implicit s: Session): Vector[Transfer] = {
+    var xfers = Vector.empty[Transfer]
+    transfers.filter(_.status === id).list.foreach{ xfer => 
+      xfers = xfers ++ Vector(xfer) 
+    }
     xfers
   }
 
