@@ -14,8 +14,9 @@
       <td>@user.name</td>
       <td>@user.org</td>
       <td>@xfer.xferDate</td>
-      @if(xfer.status == 1){ <td>Pending Review</td> }
-      @if(xfer.status == 2){ <td>Approved -- To Be Transferred</td> }
+      @if(xfer.status == 1){ <td><div class="text-success">Pending Review</div></td> }
+      @if(xfer.status == 2){ <td><div class="text-success">Approved -- To Be Transferred</div></td> }
+      @if(xfer.status == 3){ <td><div class="text-danger">Cancelled</div></div></td> }
     </tr>
   </table>
 
@@ -61,7 +62,7 @@
   <br />
   <br />
   <form method="post" action="cancel">
-  <a class="btn btn-danger" href="#">Cancele Transfer</a>
+  <a class="btn btn-danger" href="/admin/cancel/@xfer.id">Cancel Transfer</a>
   <label>reason</label>
   <input type="text" name="reason">
   </form>

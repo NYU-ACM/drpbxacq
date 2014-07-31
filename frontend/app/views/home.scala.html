@@ -14,11 +14,13 @@
   	  </tr>
   	</thead>
   	<tbody>
-	  @for(transfer <- transfers){
+	  @for(xfer <- transfers){
         <tr>
-          <td><a href="/transfer/@transfer.id">@transfer.id</a></td>
-          <td>@transfer.xferDate</td>
-          <td>@transfer.status</td>
+          <td><a href="/transfer/@xfer.id">@xfer.id</a></td>
+          <td>@xfer.xferDate</td>
+          @if(xfer.status == 1){ <td><div class="text-success">Pending Review</div></td> }
+          @if(xfer.status == 2){ <td><div class="text-success">Approved -- To Be Transferred</div></td> }
+          @if(xfer.status == 3){ <td><div class="text-danger">Cancelled</div></div></td> }
         </tr>
       }
 	</tbody>

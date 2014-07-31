@@ -112,8 +112,8 @@ object Transfers {
   def updateStatus(id: UUID, status: Int)(implicit s: Session) {
     val q = for { t <- transfers if t.id === id } yield t.status
     q.update(status)
-    val statement = q.updateStatement
-    val invoker = q.updateInvoker
+    q.updateStatement
+    q.updateInvoker
   }
 }
 

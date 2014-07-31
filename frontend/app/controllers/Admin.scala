@@ -40,8 +40,9 @@ object Admin extends Controller with FileHelper {
       case Some(email) => {
         val pendingXfers = DB.withSession{ implicit session => Transfers.getTransfersByStatus(1) } 
         val activeXfers = DB.withSession{ implicit session => Transfers.getTransfersByStatus(2) } 
+        val cancelledXfers = DB.withSession{ implicit session => Transfers.getTransfersByStatus(3) } 
         val userMap = DB.withSession { implicit session => Users.getUserMap }   
-        Ok(views.html.admin.home(pendingXfers, activeXfers, userMap))
+        Ok(views.html.admin.home(pendingXfers, activeXfers, cancelledXfers, userMap))
       }
 
       case None => {
@@ -78,7 +79,18 @@ object Admin extends Controller with FileHelper {
     request.session.get("admin") match {
       case Some(email) => {
         DB.withSession { implicit session => Transfers.updateStatus(UUID.fromString(uuid), 2)}
-        Ok("You're going to be OK")
+        Redirect(routes.Admin.home).flashing{"success" -> "transfer approved"}
+      }
+
+      case None => Redirect(routes.Admin.index).flashing("denied" -> "You do not have a valid session, please login")   
+    }
+  }
+
+  def cancel(uuid: String) = Action { request =>
+    request.session.get("admin") match {
+      case Some(email) => {
+        DB.withSession { implicit session => Transfers.updateStatus(UUID.fromString(uuid), 3)}
+        Redirect(routes.Admin.home).flashing{"success" -> "transfer cancelled"}
       }
 
       case None => Redirect(routes.Admin.index).flashing("denied" -> "You do not have a valid session, please login")   

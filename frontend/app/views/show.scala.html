@@ -1,7 +1,7 @@
-@(user: models.User, transfer: models.Transfer, summary: Map[String, Tuple2[Int, Long]], files: Vector[models.File])
+@(user: models.User, xfer: models.Transfer, summary: Map[String, Tuple2[Int, Long]], files: Vector[models.File])
 
 @main("DRPBXACQ") {
-  <div class="lead">transfer: @transfer.id</div>
+  <div class="lead">transfer: @xfer.id</div>
   <table class="table table-striped">
     <tr>
       <th>transferred by</t>
@@ -12,8 +12,10 @@
     <tr>
       <td>@user.name</td>
       <td>@user.org</td>
-      <td>@transfer.xferDate</td>
-      <td>@transfer.status</td>
+      <td>@xfer.xferDate</td>
+      @if(xfer.status == 1){ <td><div class="text-success">Pending Review</div></td> }
+      @if(xfer.status == 2){ <td><div class="text-success">Approved -- To Be Transferred</div></td> }
+      @if(xfer.status == 3){ <td><div class="text-danger">Cancelled</div></div></td> }
     </tr>
   </table>
 
