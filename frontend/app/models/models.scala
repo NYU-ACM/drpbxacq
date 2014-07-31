@@ -48,6 +48,14 @@ object Users {
   def findById(uid: Long)(implicit s: Session): User = { 
     users.filter(_.id === uid).list.head
   }
+
+  def getUserMap(implicit s: Session): Map[Long, String] = {
+    var userMap = Map.empty[Long, String]
+    for(user <- users){
+      userMap += (user.id.get -> user.org) 
+    }
+    userMap
+  }
   
   def count(implicit s: Session): Int = Query(users.length).first
 
@@ -63,14 +71,15 @@ object Users {
  * Transfers
  */
 
-case class Transfer(id: UUID, userId: Long, xferDate: java.sql.Date, status: Int)
+case class Transfer(id: UUID, userId: Long, xferDate: java.sql.Date, status: Int, cancelNote: String)
 
 class Transfers(tag: Tag) extends Table[Transfer](tag, "TRANSFERS") {
   def id = column[UUID]("ID", O.PrimaryKey)
   def userId = column[Long]("USER_ID", O.NotNull)
   def xferDate = column[java.sql.Date]("XFER_DATE", O.NotNull)
   def status = column[Int]("STATUS", O.NotNull)
-  def * = (id, userId, xferDate, status) <> (Transfer.tupled, Transfer.unapply _)
+  def cancelNote = column[String]("CANCEL_NOTE", O.NotNull)
+  def * = (id, userId, xferDate, status, cancelNote) <> (Transfer.tupled, Transfer.unapply _)
   def user = foreignKey("USR_FK", userId, Transfers.users)(_.id)
 }
 
@@ -98,6 +107,13 @@ object Transfers {
 
   def findTransferById(id: UUID)(implicit s: Session): Transfer = {
     transfers.filter(_.id === id).list.head
+  }
+
+  def updateStatus(id: UUID, status: Int)(implicit s: Session) {
+    val q = for { t <- transfers if t.id === id } yield t.status
+    q.update(status)
+    val statement = q.updateStatement
+    val invoker = q.updateInvoker
   }
 }
 

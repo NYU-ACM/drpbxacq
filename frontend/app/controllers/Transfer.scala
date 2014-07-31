@@ -12,8 +12,9 @@ import java.util.{UUID,Locale}
 import java.security.MessageDigest
 
 import models._
+import helpers._ 
 
-object Transfer extends Controller {
+object Transfer extends Controller with FileHelper {
 
   val key = Play.current.configuration.getString("drpbx.key").get
   val secret = Play.current.configuration.getString("drpbx.secret").get
@@ -31,7 +32,7 @@ object Transfer extends Controller {
         var files = Vector.empty[File]
         val now = new java.sql.Date(new java.util.Date().getTime())
         DB.withSession{ implicit session =>
-          Transfers.insert(new Transfer(xferUUID, user.id.get, now, 1))
+          Transfers.insert(new Transfer(xferUUID, user.id.get, now, 1, ""))
           paths.foreach{path =>
             Files.insert(getFile(xferUUID, user.id.get, path, client))
           }
@@ -95,20 +96,5 @@ object Transfer extends Controller {
     }
   }
 
-  def summarizeFiles(files: Vector[File]): Map[String, Tuple2[Int, Long]] = {
-    import org.apache.commons.io.FilenameUtils
-    var fileTypes = Map.empty[String, Tuple2[Int, Long]]
 
-    files.foreach{ file =>
-      val ext = FilenameUtils.getExtension(file.filename).toLowerCase
-      if(fileTypes.contains(ext)){
-        val currentFileType = fileTypes(ext)
-        fileTypes = fileTypes - ext
-        fileTypes = fileTypes ++ Map(ext -> new Tuple2(currentFileType._1 + 1, currentFileType._2 + file.size))
-      } else {
-        fileTypes = fileTypes ++ Map(ext -> new Tuple2(1, file.size))
-      }
-    }
-    fileTypes
-  }
 }

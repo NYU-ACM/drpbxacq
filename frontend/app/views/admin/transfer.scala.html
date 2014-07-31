@@ -1,0 +1,69 @@
+@(xfer: models.Transfer, user: models.User, files: Vector[models.File], summary: Map[String, Tuple2[Int, Long]])
+
+@admin("drpbxacq admin") {
+
+  <div class="lead">transfer: @xfer.id</div>
+  <table class="table table-striped">
+    <tr>
+      <th>transferred by</t>
+      <th>organization</th>
+      <th>trasfer date</th>
+      <th>status</th>
+    </tr>
+    <tr>
+      <td>@user.name</td>
+      <td>@user.org</td>
+      <td>@xfer.xferDate</td>
+      @if(xfer.status == 1){ <td>Pending Review</td> }
+      @if(xfer.status == 2){ <td>Approved -- To Be Transferred</td> }
+    </tr>
+  </table>
+
+  <div class="lead">Summary</div>
+  <table class="table table-striped form-dbxentry">
+    <tr>
+      <th>ext</th>
+      <th>count</th>
+      <th>size</th>
+    </tr>
+    @for(filetype <- summary){
+      <tr>
+        <td>@filetype._1</td>
+        <td>@filetype._2._1</td>
+
+        <td>@scala.math.BigDecimal(((filetype._2._2 / 1024.00) / 1024.00)).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble MB</td>
+      </tr>      
+    } 
+  </table>
+
+  <div class="lead">files in transfer</div>
+  <div class="form-dbxentry">
+  <table class="table table-striped">
+  	<tr>
+  	  <th>name</th>
+      <th>path</th>
+	    <th>size</th>
+	    <th>status</th>
+  	</tr>
+    @for(file <- files){
+      <tr>
+      	<td>@file.filename</td>
+        <td>@file.path</td> 
+      	<td>@file.humanSize</td>
+      	<td>@file.status</td>
+      </tr>
+    }
+  </table>
+  </div>
+  <br />
+  
+  @if(xfer.status == 1) { <a class="btn btn-primary" href="/admin/approve/@xfer.id">Approve Transfer</a> }
+  <br />
+  <br />
+  <form method="post" action="cancel">
+  <a class="btn btn-danger" href="#">Cancele Transfer</a>
+  <label>reason</label>
+  <input type="text" name="reason">
+  </form>
+}
+

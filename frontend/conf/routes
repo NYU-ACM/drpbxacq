@@ -32,6 +32,10 @@ GET   	/admin/insert		controllers.Admin.insert
 
 GET    	/admin/logout		controllers.Admin.logout
 
+GET		/admin/transfer/:uuid  	controllers.Admin.transfer(uuid: String)	
+
+GET		/admin/approve/:uuid	controllers.Admin.approve(uuid: String)
+
 # Transfer Routes
 
 GET	   	/entry/:path		controllers.Transfer.entry(path: String)

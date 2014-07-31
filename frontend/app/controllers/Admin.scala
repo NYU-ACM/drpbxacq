@@ -8,11 +8,12 @@ import play.api.db.slick._
 import play.api.Play.current
 
 import models._
+import helpers._ 
 
 import java.util.{ Locale, UUID }
 import java.security.MessageDigest
 
-object Admin extends Controller {
+object Admin extends Controller with FileHelper {
   def index = Action { implicit request => Ok(views.html.admin.login(loginForm)) }
   
   def login = Action { request =>  
@@ -35,12 +36,30 @@ object Admin extends Controller {
   }
 
   def home = Action { request =>
-    request.session.get("email") match {
+    request.session.get("admin") match {
       case Some(email) => {
         val pendingXfers = DB.withSession{ implicit session => Transfers.getTransfersByStatus(1) } 
-        Ok(views.html.admin.home(pendingXfers))
+        val activeXfers = DB.withSession{ implicit session => Transfers.getTransfersByStatus(2) } 
+        val userMap = DB.withSession { implicit session => Users.getUserMap }   
+        Ok(views.html.admin.home(pendingXfers, activeXfers, userMap))
       }
 
+      case None => {
+        Redirect(routes.Admin.index).flashing("denied" -> "You do not have a valid session, please login")  
+      }
+    }
+  }
+
+  def transfer(uuid: String) = Action { request => 
+    request.session.get("admin") match {
+      case Some(email) => {
+        val transfer = DB.withSession { implicit session => Transfers.findTransferById(UUID.fromString(uuid))}
+        val user = DB.withSession { implicit session => Users.findById(transfer.userId)}
+        val files = DB.withSession{ implicit session => Files.getFilesByTransferId(UUID.fromString(uuid))}
+        val summary = summarizeFiles(files)
+
+        Ok(views.html.admin.transfer(transfer, user, files, summary))
+      }  
       case None => {
         Redirect(routes.Admin.index).flashing("denied" -> "You do not have a valid session, please login")  
       }
@@ -53,6 +72,17 @@ object Admin extends Controller {
   	val admin = new Admin(UUID.randomUUID, "admin", Hex.encodeHexString(md5))
   	DB.withSession{ implicit session => Admins.insert(admin) }
   	Redirect(routes.Admin.index)
+  }
+
+  def approve(uuid: String) = Action { request =>
+    request.session.get("admin") match {
+      case Some(email) => {
+        DB.withSession { implicit session => Transfers.updateStatus(UUID.fromString(uuid), 2)}
+        Ok("You're going to be OK")
+      }
+
+      case None => Redirect(routes.Admin.index).flashing("denied" -> "You do not have a valid session, please login")   
+    }
   }
 
   val loginForm = Form(

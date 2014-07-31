@@ -1,24 +1,49 @@
-@(pendingXfers: Vector[models.Transfer])
+@(pendingXfers: Vector[models.Transfer], activeXfers: Vector[models.Transfer], users: Map[Long, String])
 
 @admin("DRPBXACQ ADMIN"){
   <br />
   <div class="lead well text-primary bg-info">Pending Transfers</div>
   
-  <table class="table table-striped form-dbxentry">
-  	<tr>
-  	  <th>date</th>
-  	  <th>id</th>
-  	  <th>organization</th>
-  	  <th>
-  	@for(xfer <- pendingXfers) {
-  	  <tr>
-  	    <td>@xfer.xferDate</td>
-  	    <td>@xfer.id</td>
-  	    <td>
-  	    <td><a class="btn btn-primary" href="#">view</a></td>
-  	  </tr>
-  	}
-  </table>
+  @if(pendingXfers.size > 0) {
+    <table class="table table-striped form-dbxentry">
+    	<tr>
+    	  <th width="10%">date</th>
+    	  <th width="25%">id</th>
+    	  <th>organization</th>
+        <th>status</th>
+    	  <th width="10%">
+    	@for(xfer <- pendingXfers) {
+    	  <tr>
+    	    <td>@xfer.xferDate</td>
+    	    <td>@xfer.id</td>
+    	    <td>@users(xfer.userId)</td>
+          <td>@xfer.status</td>
+    	    <td><a class="btn btn-primary" href="/admin/transfer/@xfer.id">view</a></td>
+    	  </tr>
+    	}
+    </table>
+  } else{ <div class="lead bg-info">There are no pending transfers</div> }
+
   <div class="lead well text-primary">Active Transfers</div>
+
+    <table class="table table-striped form-dbxentry">
+    <tr>
+      <th width="10%">date</th>
+      <th width="25%">id</th>
+      <th>organization</th>
+      <th>status</th>
+      <th width="10%"/>
+    @for(xfer <- activeXfers) {
+      <tr>
+        <td>@xfer.xferDate</td>
+        <td>@xfer.id</td>
+        <td>@users(xfer.userId)</td>
+        <td>@xfer.status</td>
+        <td><a class="btn btn-primary" href="/admin/transfer/@xfer.id">view</a></td>
+      </tr>
+    }
+  </table>
+
+
   <div class="lead well text-primary">Completed Transfers</div>
 }
