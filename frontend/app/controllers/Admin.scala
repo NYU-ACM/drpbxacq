@@ -103,4 +103,18 @@ object Admin extends Controller with FileHelper {
       "password" -> nonEmptyText
     )(Login.apply)(Login.unapply)
   )
+
+  def submit = Action.async { 
+    implicit val context = scala.concurrent.ExecutionContext.Implicits.global
+    import play.api.libs.ws._
+    import scala.concurrent.Future
+    val url = "http://localhost:8080/transfers/123e4567-e89b-12d3-a456-426655440000"
+    WS.url(url).get().map { response =>
+      val r = response.json
+      println(r.getClass)
+      Ok(r + " " + r.getClass)
+    }
+  }
+
+  case class Message(result: String, message: String)
 }

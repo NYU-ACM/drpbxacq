@@ -38,6 +38,8 @@ GET		/admin/approve/:uuid	controllers.Admin.approve(uuid: String)
 
 GET		/admin/cancel/:uuid		controllers.Admin.cancel(uuid: String)
 
+GET		/submit				controllers.Admin.submit
+
 # Transfer Routes
 
 GET	   	/entry/:path		controllers.Transfer.entry(path: String)
