@@ -47,7 +47,7 @@ object Donor extends Controller {
     }
   }
 
-  def user = Action { request =>
+  def user = Action { implicit request =>
     request.session.get("email") match {
       
       case Some(email) => { 
@@ -60,7 +60,7 @@ object Donor extends Controller {
     }
   }
 
-  def transfer = Action { request =>
+  def transfer = Action { implicit request =>
     request.session.get("email") match {
       case Some(email) => {
         val user = DB.withSession{ implicit session => Users.findByEmail(email)}

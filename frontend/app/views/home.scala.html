@@ -1,9 +1,13 @@
-@(transfers: Vector[models.Transfer], user: models.User)
+@(transfers: Vector[models.Transfer], user: models.User)(implicit flash: Flash)
 
-@main("DROPBXACQ"){
+@main("DRPBXACQ"){
   <div class="lead">@user.name @user.org</div>
-  <a class="btn btn-primary" href="/user/transfer">create transfer</a>
   
+  @if(flash.data.contains("success")){
+    <div class="text-success well lead">@flash.get("success")</div><br>
+  }
+
+  <a class="btn btn-primary" href="/user/transfer">create transfer</a>
   <div class="lead">transfers</div>
   <table class="table table-striped">
   	<thead>

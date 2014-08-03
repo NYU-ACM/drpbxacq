@@ -41,8 +41,7 @@ object Users {
   }
 
   def findByEmail(email: String)(implicit s: Session): User = {
-    users.filter(_.email === email).list.head
-
+    user = users.filter(_.email === email).list.head
   }
 
   def findById(uid: Long)(implicit s: Session): User = { 

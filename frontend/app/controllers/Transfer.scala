@@ -37,7 +37,7 @@ object Transfer extends Controller with FileHelper {
             Files.insert(getFile(xferUUID, user.id.get, path, client))
           }
         }
-        Redirect(routes.Donor.user)
+        Redirect(routes.Donor.user).flashing{"success" -> ("Transfer " + xferUUID + " Created")}
       } case None => Redirect(routes.Donor.index)
     }
   }  

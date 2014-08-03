@@ -22,7 +22,7 @@
     </table>
   } else{ <div class="lead bg-info">There are no pending transfers</div> }
 
-  <div class="lead well text-primary">Active Transfers</div>
+  <div class="lead well text-success">Active Transfers</div>
   @if(activeXfers.size > 0) {
     <table class="table table-striped form-dbxentry">
       <tr>
@@ -44,7 +44,7 @@
   } else{ <div class="lead bg-info">There are no active transfers</div> }
 
 
-  <div class="lead well text-primary">Cancelled Transfers</div>
+  <div class="lead well text-danger">Cancelled Transfers</div>
   @if(cancelledXfers.size > 0) {
     <table class="table table-striped form-dbxentry">
       <tr>
