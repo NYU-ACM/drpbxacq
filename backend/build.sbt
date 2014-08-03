@@ -14,7 +14,8 @@ libraryDependencies ++= Seq(
   "io.spray" % "spray-can" % "1.3.1",
   "io.spray" % "spray-routing" % "1.3.1",
   "io.spray" % "spray-json_2.10" % "1.2.6",
-  "ch.qos.logback" % "logback-classic" % "1.1.2"
+  "ch.qos.logback" % "logback-classic" % "1.1.2",
+  "org.json4s" % "json4s-native_2.10" % "3.2.10"
 )
 
 Revolver.settings
