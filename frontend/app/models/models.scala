@@ -41,7 +41,7 @@ object Users {
   }
 
   def findByEmail(email: String)(implicit s: Session): User = {
-    user = users.filter(_.email === email).list.head
+    users.filter(_.email === email).list.head
   }
 
   def findById(uid: Long)(implicit s: Session): User = { 
@@ -70,15 +70,16 @@ object Users {
  * Transfers
  */
 
-case class Transfer(id: UUID, userId: Long, xferDate: java.sql.Date, status: Int, cancelNote: String)
+case class Transfer(id: UUID, userId: Long, title: String, xferDate: java.sql.Date, status: Int, cancelNote: String)
 
 class Transfers(tag: Tag) extends Table[Transfer](tag, "TRANSFERS") {
   def id = column[UUID]("ID", O.PrimaryKey)
+  def title = column[String]("TITLE", O.NotNull)
   def userId = column[Long]("USER_ID", O.NotNull)
   def xferDate = column[java.sql.Date]("XFER_DATE", O.NotNull)
   def status = column[Int]("STATUS", O.NotNull)
   def cancelNote = column[String]("CANCEL_NOTE", O.NotNull)
-  def * = (id, userId, xferDate, status, cancelNote) <> (Transfer.tupled, Transfer.unapply _)
+  def * = (id, userId, title, xferDate, status, cancelNote) <> (Transfer.tupled, Transfer.unapply _)
   def user = foreignKey("USR_FK", userId, Transfers.users)(_.id)
 }
 
@@ -120,19 +121,20 @@ object Transfers {
  * Files
  */
 
-case class File(id: UUID, userId: Long, xferId: UUID, filename: String, path: String, humanSize: String, size: Long, modDate: java.sql.Date, status: String)
+case class File(id: UUID, userId: Long, xferId: UUID, rev: String, filename: String, path: String, humanSize: String, size: Long, modDate: java.sql.Date, status: String)
 
 class Files(tag: Tag) extends Table[File](tag, "FILES") {
   def id = column[UUID]("ID", O.PrimaryKey)
   def userId = column[Long]("USER_ID", O.NotNull)
   def xferId = column[UUID]("TRANS_ID", O.NotNull)
+  def rev = column[String]("REVISION", O.NotNull)
   def filename = column[String]("FILENAME", O.NotNull)
   def path = column[String]("PATH", O.NotNull)
   def humanSize = column[String]("HUMAN_SIZE", O.NotNull)
   def size = column[Long]("SIZE", O.NotNull)
   def modDate = column[java.sql.Date]("MOD_DATE", O.NotNull)
   def status = column[String]("STATUS", O.NotNull)
-  def * = (id, userId, xferId, filename, path, humanSize, size, modDate, status) <> (File.tupled, File.unapply _)
+  def * = (id, userId, xferId, rev, filename, path, humanSize, size, modDate, status) <> (File.tupled, File.unapply _)
   def user = foreignKey("USR_FK", userId, Files.users)(_.id)
   def xfer = foreignKey("XFR_FK", xferId, Files.transfers)(_.id)
 }

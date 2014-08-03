@@ -32,7 +32,7 @@ object Transfer extends Controller with FileHelper {
         var files = Vector.empty[File]
         val now = new java.sql.Date(new java.util.Date().getTime())
         DB.withSession{ implicit session =>
-          Transfers.insert(new Transfer(xferUUID, user.id.get, now, 1, ""))
+          Transfers.insert(new Transfer(xferUUID, user.id.get, request.body.asFormUrlEncoded.get("xferName")(0), now, 1, ""))
           paths.foreach{path =>
             Files.insert(getFile(xferUUID, user.id.get, path, client))
           }
@@ -46,7 +46,7 @@ object Transfer extends Controller with FileHelper {
   def getFile(transUUID: UUID, userId: Long, path: String, client: DbxClient): File = {
     val md = client.getMetadata(path).asFile
     val path2 = path.substring(0, path.length - md.name.length)
-    new File(UUID.randomUUID, userId, transUUID, md.name, path2, md.humanSize, md.numBytes, new java.sql.Date(md.lastModified.getTime), "Queued")
+    new File(UUID.randomUUID, userId, transUUID, md.rev, md.name, path2, md.humanSize, md.numBytes, new java.sql.Date(md.lastModified.getTime), "Queued")
   }
 
   def entry(path: String) = Action{ request =>

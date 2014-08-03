@@ -1,4 +1,4 @@
-@(transfers: Vector[models.Transfer], user: models.User)(implicit flash: Flash)
+@(pendingXfers: Vector[models.Transfer], user: models.User)(implicit flash: Flash)
 
 @main("DRPBXACQ"){
   <div class="lead">@user.name @user.org</div>
@@ -8,25 +8,32 @@
   }
 
   <a class="btn btn-primary" href="/user/transfer">create transfer</a>
-  <div class="lead">transfers</div>
-  <table class="table table-striped">
-  	<thead>
+  
+  <br /><br />
+  <div class="lead well text-primary bg-info">Pending Transfers</div>
+  
+  @if(pendingXfers.size > 0) {
+    <table class="table table-striped form-dbxentry">
+  	 <thead>
   	  <tr>
   	  	<th>id</th>
+        <th>title</th>
   	  	<th>date</th>
   	  	<th>status</th>
   	  </tr>
-  	</thead>
-  	<tbody>
-	  @for(xfer <- transfers){
-        <tr>
-          <td><a href="/transfer/@xfer.id">@xfer.id</a></td>
-          <td>@xfer.xferDate</td>
-          @if(xfer.status == 1){ <td><div class="text-success">Pending Review</div></td> }
-          @if(xfer.status == 2){ <td><div class="text-success">Approved -- To Be Transferred</div></td> }
-          @if(xfer.status == 3){ <td><div class="text-danger">Cancelled</div></div></td> }
-        </tr>
+  	 </thead>
+  	 <tbody>
+	   @for(xfer <- pendingXfers){
+       <tr>
+        <td><a href="/transfer/@xfer.id">@xfer.id</a></td>
+        <td>@xfer.title</td>
+        <td>@xfer.xferDate</td>
+        @if(xfer.status == 1){ <td><div class="text-success">Pending Review</div></td> }
+        @if(xfer.status == 2){ <td><div class="text-success">Approved -- To Be Transferred</div></td> }
+        @if(xfer.status == 3){ <td><div class="text-danger">Cancelled</div></div></td> }
+       </tr>
       }
-	</tbody>
-  </table>
+	   </tbody>
+    </table>
+  } else{ <div class="lead bg-info">There are no pending transfers</div> }
 }
