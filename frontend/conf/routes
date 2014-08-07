@@ -34,9 +34,9 @@ GET    	/admin/logout		controllers.Admin.logout
 
 GET		/admin/transfer/:uuid  	controllers.Admin.transfer(uuid: String)	
 
-GET		/admin/approve/:uuid	controllers.Admin.approve(uuid: String)
+POST	/admin/approve		controllers.Admin.approve
 
-GET		/admin/cancel/:uuid		controllers.Admin.cancel(uuid: String)
+POST	/admin/cancel		controllers.Admin.cancel
 
 GET		/submit				controllers.Admin.submit
 

@@ -23,7 +23,8 @@ object Transfer extends Controller with FileHelper {
   
   def transfer = Action { request =>
     val paths = request.body.asFormUrlEncoded.get("files[]")
-
+    val donorNote = request.body.asFormUrlEncoded.get("donorNote")(0)
+    val xferName = request.body.asFormUrlEncoded.get("xferName")(0)
     request.session.get("email") match {
       case Some(email) => {
         val user = DB.withSession{ implicit session => Users.findByEmail(email)}
@@ -32,7 +33,7 @@ object Transfer extends Controller with FileHelper {
         var files = Vector.empty[File]
         val now = new java.sql.Date(new java.util.Date().getTime())
         DB.withSession{ implicit session =>
-          Transfers.insert(new Transfer(xferUUID, user.id.get, request.body.asFormUrlEncoded.get("xferName")(0), now, 1, "", ""))
+          Transfers.insert(new Transfer(xferUUID, user.id.get, xferName, now, 1, "", "", donorNote))
           paths.foreach{path =>
             Files.insert(getFile(xferUUID, user.id.get, path, client))
           }

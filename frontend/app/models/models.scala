@@ -70,7 +70,7 @@ object Users {
  * Transfers
  */
 
-case class Transfer(id: UUID, userId: Long, title: String, xferDate: java.sql.Date, status: Int, accessionId: String, note: String)
+case class Transfer(id: UUID, userId: Long, title: String, xferDate: java.sql.Date, status: Int, accessionId: String, adminNote: String, donorNote: String)
 
 class Transfers(tag: Tag) extends Table[Transfer](tag, "TRANSFERS") {
   def id = column[UUID]("ID", O.PrimaryKey)
@@ -79,8 +79,9 @@ class Transfers(tag: Tag) extends Table[Transfer](tag, "TRANSFERS") {
   def xferDate = column[java.sql.Date]("XFER_DATE", O.NotNull)
   def status = column[Int]("STATUS", O.NotNull)
   def accessionId = column[String]("ACCESSION_ID", O.NotNull)
-  def note = column[String]("NOTE", O.NotNull)
-  def * = (id, userId, title, xferDate, status, accessionId, note) <> (Transfer.tupled, Transfer.unapply _)
+  def adminNote = column[String]("ADMIN_NOTE", O.NotNull)
+  def donorNote = column[String]("DONOR_NOTE", O.NotNull)
+  def * = (id, userId, title, xferDate, status, accessionId, adminNote, donorNote) <> (Transfer.tupled, Transfer.unapply _)
   def user = foreignKey("USR_FK", userId, Transfers.users)(_.id)
 }
 
@@ -113,6 +114,20 @@ object Transfers {
   def updateStatus(id: UUID, status: Int)(implicit s: Session) {
     val q = for { t <- transfers if t.id === id } yield t.status
     q.update(status)
+    q.updateStatement
+    q.updateInvoker
+  }
+
+  def updateAccessionNum(id: UUID, acc: String)(implicit s: Session) {
+    val q = for { t <- transfers if t.id === id } yield t.accessionId
+    q.update(acc)
+    q.updateStatement
+    q.updateInvoker
+  }
+
+    def updateAdminNote(id: UUID, note: String)(implicit s: Session) {
+    val q = for { t <- transfers if t.id === id } yield t.adminNote
+    q.update(note)
     q.updateStatement
     q.updateInvoker
   }

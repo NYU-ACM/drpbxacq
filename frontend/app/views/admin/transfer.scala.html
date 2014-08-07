@@ -2,7 +2,9 @@
 
 @admin("drpbxacq admin") {
 
-  <div class="lead">@xfer.id : @xfer.title</div>
+  <div class="lead">@xfer.id <br>Title: @xfer.title</div>
+  <div class="lead">Donor Note:</div> 
+  <div class="well" style="background-color:#fff">@xfer.donorNote</div>
   <table class="table table-striped">
     <tr>
       <th>transferred by</t>
@@ -62,8 +64,8 @@
   
   @if(xfer.status == 1) {
 
-    <form method="post" action="approve" class="form-inline">
-      <input type="submit" class="btn btn-primary"/ value="Approve Accesion"> 
+    <form method="post" action="/admin/approve" class="form-inline">
+      <input type="submit" class="btn btn-primary" value="Approve Accession"> 
       <div class="form-group">
         <label class="sr-only">accession #</label>
         <input type="text" name="accessionId" placeholder="accession number"/>
@@ -78,11 +80,12 @@
 
 <br>
 
-<form method="post" action="cancel" class="form-inline">
+<form method="post" action="/admin/cancel" class="form-inline">
   <input type="submit" class="btn btn-danger" value="Cancel Transfer" />
   <div class="form-group">
     <label class="sr-only">reason</label>
     <input type="text" name="reason" placeholder="reason">
   </div>
+  <input type="hidden" name="xferId" value="@xfer.id" />
 </form>
 }

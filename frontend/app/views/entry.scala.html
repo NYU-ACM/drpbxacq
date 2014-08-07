@@ -13,7 +13,6 @@
           <tr>
             <th/>
             <th>filename</th>
-            <th>revision</th>
             <th>size</th>
             <th> mod. date</th>
           </tr>
@@ -21,7 +20,6 @@
             <tr>
               <td width="3%"><input type="checkbox" name="files[]" value="@entry.path" checked></td>
               <td width="50%"><strong>@entry.filename</strong>
-              <td>@entry.revision</td>
               <td width="10%">@entry.humanSize</td>
               <td>@entry.mDate</td>
             </tr>
@@ -33,6 +31,11 @@
     <div class="form-group">
       <label>transfer title</label>
       <input class="form-control" type="text" name="xferName"/>
+    </div>
+
+    <div class="form-group">
+      <label>Note</label>
+      <input class="form-control" type="text" name="donorNote"/>
     </div>
 
     <button class="btn btn-primary text-center" type="submit">Transfer</button>

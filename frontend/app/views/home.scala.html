@@ -22,15 +22,15 @@
     <table class="table table-striped form-dbxentry">
       <tr>
         <th width="10%">date</th>
-        <th width="30%">id</th>
         <th>title</th>
+        <th>summary</th>
         <th width="10%">
       @for(xfer <- pendingXfers) {
         <tr>
           <td>@xfer.xferDate</td>
-          <td>@xfer.id</td>
           <td>@xfer.title</td>
-          <td><a class="btn btn-primary" href="/admin/transfer/@xfer.id">view</a></td>
+          <td/>
+          <td><a class="btn btn-primary" href="/transfer/@xfer.id">view</a></td>
         </tr>
       }
     </table>

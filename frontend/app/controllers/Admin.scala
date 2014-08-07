@@ -76,10 +76,15 @@ object Admin extends Controller with FileHelper {
   	Redirect(routes.Admin.index)
   }
 
-  def approve(uuid: String) = Action { request =>
+  def approve = Action { request =>
     request.session.get("admin") match {
       case Some(email) => {
-        DB.withSession { implicit session => Transfers.updateStatus(UUID.fromString(uuid), 2)}
+        val uuid = request.body.asFormUrlEncoded.get("xferId").head
+        val acc = request.body.asFormUrlEncoded.get("accessionId").head
+        DB.withSession { implicit session => 
+          Transfers.updateStatus(UUID.fromString(uuid), 2)
+          Transfers.updateAccessionNum(UUID.fromString(uuid), acc)
+        }
         Redirect(routes.Admin.home).flashing{"success" -> "transfer approved"}
       }
 
@@ -87,10 +92,15 @@ object Admin extends Controller with FileHelper {
     }
   }
 
-  def cancel(uuid: String) = Action { request =>
+  def cancel = Action { request =>
     request.session.get("admin") match {
       case Some(email) => {
-        DB.withSession { implicit session => Transfers.updateStatus(UUID.fromString(uuid), 3)}
+        val uuid = request.body.asFormUrlEncoded.get("xferId").head
+        val reason = request.body.asFormUrlEncoded.get("reason").head
+        DB.withSession { implicit session => 
+          Transfers.updateStatus(UUID.fromString(uuid), 3)
+          Transfers.updateAdminNote(UUID.fromString(uuid), reason)
+        }
         Redirect(routes.Admin.home).flashing{"success" -> "transfer cancelled"}
       }
 
