@@ -2,7 +2,7 @@
 
 @admin("drpbxacq admin") {
 
-  <div class="lead">transfer: @xfer.id</div>
+  <div class="lead">@xfer.id : @xfer.title</div>
   <table class="table table-striped">
     <tr>
       <th>transferred by</t>
@@ -37,12 +37,13 @@
     } 
   </table>
 
-  <div class="lead">files in transfer</div>
+  <div class="lead">File Manifest</div>
   <div class="form-dbxentry">
   <table class="table table-striped">
   	<tr>
   	  <th>name</th>
       <th>path</th>
+      <th>rev</th>
 	    <th>size</th>
 	    <th>status</th>
   	</tr>
@@ -50,6 +51,7 @@
       <tr>
       	<td>@file.filename</td>
         <td>@file.path</td> 
+        <td>@file.rev</td>
       	<td>@file.humanSize</td>
       	<td>@file.status</td>
       </tr>

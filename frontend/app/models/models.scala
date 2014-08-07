@@ -12,7 +12,7 @@ import java.security.MessageDigest
  */
 
 case class Login(email: String, password: String)
-case class Entry(filename: String, path: String, humanSize: String, size: Long, mDate: java.util.Date)
+case class Entry(filename: String, path: String, revision: String, humanSize: String, size: Long, mDate: java.util.Date)
 case class FileType(extension: String, count: Int, size: Long)
 
 

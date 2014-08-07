@@ -41,8 +41,9 @@ object Admin extends Controller with FileHelper {
         val pendingXfers = DB.withSession{ implicit session => Transfers.getTransfersByStatus(1) } 
         val activeXfers = DB.withSession{ implicit session => Transfers.getTransfersByStatus(2) } 
         val cancelledXfers = DB.withSession{ implicit session => Transfers.getTransfersByStatus(3) } 
+        val completeXfers = DB.withSession{ implicit session => Transfers.getTransfersByStatus(4) } 
         val userMap = DB.withSession { implicit session => Users.getUserMap }   
-        Ok(views.html.admin.home(pendingXfers, activeXfers, cancelledXfers, userMap))
+        Ok(views.html.admin.home(pendingXfers, activeXfers, cancelledXfers, completeXfers, userMap))
       }
 
       case None => {

@@ -70,7 +70,7 @@ object Transfer extends Controller with FileHelper {
     
     listing.children.foreach{ entry => 
       if(entry.isFile){
-        val e = new Entry(entry.asFile.name, entry.asFile.path, entry.asFile.humanSize, entry.asFile.numBytes, entry.asFile.lastModified) 
+        val e = new Entry(entry.asFile.name, entry.asFile.path, entry.asFile.rev, entry.asFile.humanSize, entry.asFile.numBytes, entry.asFile.lastModified) 
         files = files ++ Vector(e)
        }   
       

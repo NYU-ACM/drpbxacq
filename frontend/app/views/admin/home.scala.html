@@ -1,4 +1,4 @@
-@(pendingXfers: Vector[models.Transfer], activeXfers: Vector[models.Transfer], cancelledXfers: Vector[models.Transfer], users: Map[Long, String])
+@(pendingXfers: Vector[models.Transfer], activeXfers: Vector[models.Transfer], cancelledXfers: Vector[models.Transfer], completeXfers: Vector[models.Transfer], users: Map[Long, String])
 
 @admin("DRPBXACQ ADMIN"){
   <br />
@@ -9,12 +9,14 @@
     	<tr>
     	  <th width="10%">date</th>
     	  <th width="30%">id</th>
+        <th>title</th>
     	  <th>organization</th>
     	  <th width="10%">
     	@for(xfer <- pendingXfers) {
     	  <tr>
     	    <td>@xfer.xferDate</td>
     	    <td>@xfer.id</td>
+          <td>@xfer.title</td>
     	    <td>@users(xfer.userId)</td>
     	    <td><a class="btn btn-primary" href="/admin/transfer/@xfer.id">view</a></td>
     	  </tr>
@@ -27,14 +29,14 @@
     <table class="table table-striped form-dbxentry">
       <tr>
         <th width="10%">date</th>
-        <th width="30%">id</th>
+        <th width="30%">title</th>
         <th>organization</th>
         <th>status</th>
         <th width="10%"/>
       @for(xfer <- activeXfers) {
         <tr>
           <td>@xfer.xferDate</td>
-          <td>@xfer.id</td>
+          <td>@xfer.title</td>
           <td>@users(xfer.userId)</td>
           @if(xfer.status == 2){ <td><div class="text-success">Approved -- To Be Transferred</div></td> }
           <td><a class="btn btn-primary" href="/admin/transfer/@xfer.id">view</a></td>
@@ -43,9 +45,27 @@
     </table>
   } else{ <div class="lead bg-info">There are no active transfers</div> }
 
+  <div class="lead well text-success">Complete Transfers</div>
+  @if(completeXfers.size > 0) {
+    <table class="table table-striped form-dbxentry">
+      <tr>
+        <th width="10%">date</th>
+        <th width="30%">id</th>
+        <th>organization</th>
+        <th width="10%"/>
+      @for(xfer <- completeXfers) {
+        <tr>
+          <td>@xfer.xferDate</td>
+          <td>@xfer.id</td>
+          <td>@users(xfer.userId)</td>
+          <td><a class="btn btn-primary" href="/admin/transfer/@xfer.id">view</a></td>
+        </tr>
+      }
+    </table>
+  } else{ <div class="lead bg-info">There are no complete transfers</div> }
 
   <div class="lead well text-danger">Cancelled Transfers</div>
-  @if(cancelledXfers.size > 0) {
+  @if(completeXfers.size > 0) {
     <table class="table table-striped form-dbxentry">
       <tr>
         <th width="10%">date</th>
@@ -62,4 +82,7 @@
       }
     </table>
   } else{ <div class="lead bg-info">There are no cancelled transfers</div> }
+
+
+  
 }
