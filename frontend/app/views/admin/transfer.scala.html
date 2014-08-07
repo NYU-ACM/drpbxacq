@@ -60,13 +60,29 @@
   </div>
   <br />
   
-  @if(xfer.status == 1) { <a class="btn btn-primary" href="/admin/approve/@xfer.id">Approve Transfer</a> }
-  <br />
-  <br />
-  <form method="post" action="cancel">
-  <a class="btn btn-danger" href="/admin/cancel/@xfer.id">Cancel Transfer</a>
-  <label>reason</label>
-  <input type="text" name="reason">
-  </form>
-}
+  @if(xfer.status == 1) {
 
+    <form method="post" action="approve" class="form-inline">
+      <input type="submit" class="btn btn-primary"/ value="Approve Accesion"> 
+      <div class="form-group">
+        <label class="sr-only">accession #</label>
+        <input type="text" name="accessionId" placeholder="accession number"/>
+      </div>
+      <div class="form-group">
+        <label class="sr-only">note</label>
+        <input type="text" name="note" placeholder="note"/>
+      </div>
+      <input type="hidden" name="xferId" value="@xfer.id" />
+    </form>
+  }
+
+<br>
+
+<form method="post" action="cancel" class="form-inline">
+  <input type="submit" class="btn btn-danger" value="Cancel Transfer" />
+  <div class="form-group">
+    <label class="sr-only">reason</label>
+    <input type="text" name="reason" placeholder="reason">
+  </div>
+</form>
+}

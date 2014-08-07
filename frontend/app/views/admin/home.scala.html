@@ -1,4 +1,4 @@
-@(pendingXfers: Vector[models.Transfer], activeXfers: Vector[models.Transfer], cancelledXfers: Vector[models.Transfer], completeXfers: Vector[models.Transfer], users: Map[Long, String])
+@(pendingXfers: Vector[models.Transfer], activeXfers: Vector[models.Transfer], cancelledXfers: Vector[models.Transfer], completeXfers: Vector[models.Transfer], users: Map[Long, String])(implicit flash: Flash)
 
 @admin("DRPBXACQ ADMIN"){
   <br />

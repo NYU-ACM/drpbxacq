@@ -52,8 +52,11 @@ object Donor extends Controller {
       
       case Some(email) => { 
         val user = DB.withSession{ implicit session => Users.findByEmail(email) }
-        val transfers = DB.withSession{ implicit session => Transfers.getTransfersByUserId(user.id.get) }
-        Ok(views.html.home(transfers, user))
+        val pendingXfers = DB.withSession{ implicit session => Transfers.getTransfersByStatus(1) } 
+        val activeXfers = DB.withSession{ implicit session => Transfers.getTransfersByStatus(2) } 
+        val cancelledXfers = DB.withSession{ implicit session => Transfers.getTransfersByStatus(3) } 
+        val completeXfers = DB.withSession{ implicit session => Transfers.getTransfersByStatus(4) } 
+        Ok(views.html.home(user, pendingXfers, activeXfers, cancelledXfers, completeXfers))
       }
 
       case None => Redirect(routes.Donor.index)

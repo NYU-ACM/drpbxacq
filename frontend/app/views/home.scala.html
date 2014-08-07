@@ -1,4 +1,4 @@
-@(pendingXfers: Vector[models.Transfer], user: models.User)(implicit flash: Flash)
+@(user: models.User, pendingXfers: Vector[models.Transfer], activeXfers: Vector[models.Transfer], cancelledXfers: Vector[models.Transfer], completeXfers: Vector[models.Transfer])(implicit flash: Flash)
 
 @main("DRPBXACQ"){
   <div class="lead">
@@ -6,36 +6,87 @@
   </div>
   
   @if(flash.data.contains("success")){
-    <div class="text-success well lead">@flash.get("success")</div><br>
+    <div class="bg-success">
+      <span class="glyphicon glyphicon-ok"></span>
+      <div class="lead">@flash.get("success")</div>
+    </div>
   }
 
+  <br>
   <a class="btn btn-primary" href="/user/transfer">create transfer</a>
-  
-  <br /><br />
-  <div class="lead well text-primary bg-info">Pending Transfers</div>
+  <br>
+  <br>
+  <h3>Pending Transfers</h3>
   
   @if(pendingXfers.size > 0) {
     <table class="table table-striped form-dbxentry">
-  	 <thead>
-  	  <tr>
-  	  	<th>id</th>
+      <tr>
+        <th width="10%">date</th>
+        <th width="30%">id</th>
         <th>title</th>
-  	  	<th>date</th>
-  	  	<th>status</th>
-  	  </tr>
-  	 </thead>
-  	 <tbody>
-	   @for(xfer <- pendingXfers){
-       <tr>
-        <td><a href="/transfer/@xfer.id">@xfer.id</a></td>
-        <td>@xfer.title</td>
-        <td>@xfer.xferDate</td>
-        @if(xfer.status == 1){ <td><div class="text-success">Pending Review</div></td> }
-        @if(xfer.status == 2){ <td><div class="text-success">Approved -- To Be Transferred</div></td> }
-        @if(xfer.status == 3){ <td><div class="text-danger">Cancelled</div></div></td> }
-       </tr>
+        <th width="10%">
+      @for(xfer <- pendingXfers) {
+        <tr>
+          <td>@xfer.xferDate</td>
+          <td>@xfer.id</td>
+          <td>@xfer.title</td>
+          <td><a class="btn btn-primary" href="/admin/transfer/@xfer.id">view</a></td>
+        </tr>
       }
-	   </tbody>
     </table>
   } else{ <div class="lead bg-info">There are no pending transfers</div> }
+
+  <h3>Active Transfers</h3>
+  @if(activeXfers.size > 0) {
+    <table class="table table-striped form-dbxentry">
+      <tr>
+        <th width="10%">date</th>
+        <th width="30%">title</th>
+        <th>status</th>
+        <th width="10%"/>
+      @for(xfer <- activeXfers) {
+        <tr>
+          <td>@xfer.xferDate</td>
+          <td>@xfer.title</td>
+          @if(xfer.status == 2){ <td><div class="text-success">Approved -- To Be Transferred</div></td> }
+          <td><a class="btn btn-primary" href="/admin/transfer/@xfer.id">view</a></td>
+        </tr>
+      }
+    </table>
+  } else{ <div class="lead bg-info">There are no active transfers</div> }
+
+  <h3>Complete Transfers</h3>
+  @if(completeXfers.size > 0) {
+    <table class="table table-striped form-dbxentry">
+      <tr>
+        <th width="10%">date</th>
+        <th width="30%">id</th>
+        <th width="10%"/>
+      @for(xfer <- completeXfers) {
+        <tr>
+          <td>@xfer.xferDate</td>
+          <td>@xfer.id</td>
+          <td><a class="btn btn-primary" href="/admin/transfer/@xfer.id">view</a></td>
+        </tr>
+      }
+    </table>
+  } else{ <div class="lead bg-info">There are no complete transfers</div> }
+
+  <h3>Cancelled Transfers</h3>
+  @if(completeXfers.size > 0) {
+    <table class="table table-striped form-dbxentry">
+      <tr>
+        <th width="10%">date</th>
+        <th width="30%">id</th>
+        <th width="10%"/>
+      @for(xfer <- cancelledXfers) {
+        <tr>
+          <td>@xfer.xferDate</td>
+          <td>@xfer.id</td>
+          <td><a class="btn btn-primary" href="/admin/transfer/@xfer.id">view</a></td>
+        </tr>
+      }
+    </table>
+  } else{ <div class="lead bg-info">There are no cancelled transfers</div> }
+
 }

@@ -35,7 +35,7 @@ object Admin extends Controller with FileHelper {
     }
   }
 
-  def home = Action { request =>
+  def home = Action { implicit request =>
     request.session.get("admin") match {
       case Some(email) => {
         val pendingXfers = DB.withSession{ implicit session => Transfers.getTransfersByStatus(1) } 

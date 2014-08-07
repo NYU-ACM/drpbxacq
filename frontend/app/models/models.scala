@@ -70,7 +70,7 @@ object Users {
  * Transfers
  */
 
-case class Transfer(id: UUID, userId: Long, title: String, xferDate: java.sql.Date, status: Int, cancelNote: String)
+case class Transfer(id: UUID, userId: Long, title: String, xferDate: java.sql.Date, status: Int, accessionId: String, note: String)
 
 class Transfers(tag: Tag) extends Table[Transfer](tag, "TRANSFERS") {
   def id = column[UUID]("ID", O.PrimaryKey)
@@ -78,8 +78,9 @@ class Transfers(tag: Tag) extends Table[Transfer](tag, "TRANSFERS") {
   def userId = column[Long]("USER_ID", O.NotNull)
   def xferDate = column[java.sql.Date]("XFER_DATE", O.NotNull)
   def status = column[Int]("STATUS", O.NotNull)
-  def cancelNote = column[String]("CANCEL_NOTE", O.NotNull)
-  def * = (id, userId, title, xferDate, status, cancelNote) <> (Transfer.tupled, Transfer.unapply _)
+  def accessionId = column[String]("ACCESSION_ID", O.NotNull)
+  def note = column[String]("NOTE", O.NotNull)
+  def * = (id, userId, title, xferDate, status, accessionId, note) <> (Transfer.tupled, Transfer.unapply _)
   def user = foreignKey("USR_FK", userId, Transfers.users)(_.id)
 }
 
