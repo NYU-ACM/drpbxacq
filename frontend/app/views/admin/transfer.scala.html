@@ -51,7 +51,7 @@
   	</tr>
     @for(file <- files){
       <tr>
-      	<td>@file.filename</td>
+      	<td><a href="#">@file.filename</a></td>
         <td>@file.path</td> 
         <td>@file.rev</td>
       	<td>@file.humanSize</td>
@@ -72,10 +72,10 @@
       </div>
       <div class="form-group">
         <label class="sr-only">note</label>
-        <input type="text" name="note" placeholder="note"/>
+        <input type="text" name="note" placeholder="note" size="50">
       </div>
       <input type="hidden" name="xferId" value="@xfer.id" />
-    </form>
+    </form> 
   }
 
 <br>

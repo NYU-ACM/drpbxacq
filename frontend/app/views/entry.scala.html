@@ -5,11 +5,11 @@
   <p>Uncheck any files to remove them from the transfer</p>
   <div class="lead"><strong>@path</strong></div></br>
   
-  <form class="form-dbxentry" method="post" action="/transfer">
+  <form method="post" action="/transfer">
     @for(dir <- dirs){
       @defining(new String(new sun.misc.BASE64Encoder().encodeBuffer(dir._1.getBytes))) { message =>
         <div class="lead"><a href="/entry/@message">@dir._1</a></div><br/>
-        <table class="table table-striped">
+        <table class="table table-striped form-dbxentry">
           <tr>
             <th/>
             <th>filename</th>
