@@ -1,0 +1,6 @@
+prodDb {
+  driver=org.postgresql.Driver 
+  url="jdbc:postgreserql://localhost:5432/[dbname]"
+  user=[db user]
+  password=[db pass]
+}
