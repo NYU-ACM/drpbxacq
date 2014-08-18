@@ -7,7 +7,21 @@ import org.apache.commons.codec.binary.Hex
 import java.security.MessageDigest
 
 
-trait Xfer {
+trait DrpbxAcq {
+
+
+  val admins = TableQuery[Admins]
+  val files = TableQuery[Files]
+  val users = TableQuery[Users]
+  val transfers = TableQuery[Transfers]
+
+  def create(implicit session: Session): Unit = {
+    (users.ddl ++ transfers.ddl ++ files.ddl ++ admins.ddl).create
+  }
+
+  def drop(implicit session: Session): Unit = {
+    (users.ddl ++ transfers.ddl ++ files.ddl ++ admins.ddl).drop
+  }
 
   case class User(id: Option[Long], email: String, name: String, org: String, passMd5: String, token:String)
 

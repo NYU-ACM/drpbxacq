@@ -14,4 +14,7 @@ class DBModel(name: String, dal: DAL, db: Database) {
 
   implicit val implicitSession = db.createSession
 
+  def createDB = dal.create
+  def dropDB = dal.drop
+
 }
