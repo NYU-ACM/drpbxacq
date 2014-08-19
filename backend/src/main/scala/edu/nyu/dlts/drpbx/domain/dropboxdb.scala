@@ -5,15 +5,21 @@ import scala.slick.lifted.Tag
 import java.util.{ UUID }
 import org.apache.commons.codec.binary.Hex
 import java.security.MessageDigest
+import edu.nyu.dlts.drpbx.backend.domain.DBProtocol._
 
 
 trait DrpbxAcq {
 
 
   val admins = TableQuery[Admins]
+
   val files = TableQuery[Files]
   val users = TableQuery[Users]
   val transfers = TableQuery[Transfers]
+
+  def insertAdmin(admin: Admin)(implicit s: Session) {
+    admins.insert(admin)
+  }
 
   def create(implicit session: Session): Unit = {
     (users.ddl ++ transfers.ddl ++ files.ddl ++ admins.ddl).create
@@ -172,7 +178,7 @@ trait DrpbxAcq {
     }
   }
 
-  case class Admin(id: UUID, email: String, passMd5: String)
+  
 
   class Admins(tag: Tag) extends Table[Admin](tag, "ADMINS") {
     def id = column[UUID]("ID", O.PrimaryKey)
@@ -181,6 +187,7 @@ trait DrpbxAcq {
     def * = (id, email, passMd5) <> (Admin.tupled, Admin.unapply _)
   }
 
+/*
   object Admins {
 
     val admins = TableQuery[Admins]
@@ -188,9 +195,7 @@ trait DrpbxAcq {
     val users = TableQuery[Users]
     val transfers = TableQuery[Transfers]
 
-    def insert(admin: Admin)(implicit s: Session) {
-      admins.insert(admin)
-    }
+
     def validateLogin(email: String, hash: String)(implicit s: Session): Option[Admin] = {
       val admin = admins.filter(_.email === email).list.head
       val md5 = MessageDigest.getInstance("MD5").digest(hash.getBytes)
@@ -198,4 +203,5 @@ trait DrpbxAcq {
       if(code == admin.passMd5) Some(admin) else None
     }
   }
+  */
 }
