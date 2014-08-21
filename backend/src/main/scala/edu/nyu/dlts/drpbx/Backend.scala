@@ -65,12 +65,15 @@ class Backend(system: ActorSystem ) extends DrpbxBackendStack with JacksonJsonSu
     implicit val timeout = Timeout(5 seconds)
     val md5 = MessageDigest.getInstance("MD5").digest(params("password").getBytes)
     val md5Hex = new String(Hex.encodeHexString(md5))
-    val login = new Login(params("name"), md5Hex)
+    val login = new Login(params("email"), md5Hex)
     val future = dbActor ? login    
     val result = Await.result(future, timeout.duration).asInstanceOf[Option[Admin]]
     
     result match {
-      case Some(a) => Map("result" -> true, "name" -> a.name)
+      case Some(a) => {
+        println(a)
+        Map("result" -> true, "name" -> a.name)
+      }
       case None => Map("result" -> false)
     }
   }
