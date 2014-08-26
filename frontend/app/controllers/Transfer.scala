@@ -1,65 +1,97 @@
 package controllers
 
 import play.api._
+import play.api.libs.ws._
+import play.api.libs.json._
+import play.api.libs.functional.syntax._
 import play.api.mvc._
 import play.api.data._
-import play.api.data.Forms._
-import play.api.db.slick._
 import play.api.Play.current
 
-import com.dropbox.core._
-import java.util.{UUID,Locale}
-import java.security.MessageDigest
+import scala.concurrent.{ Future, Await }
+import scala.concurrent.duration._
+
+import java.util.{ Locale, UUID }
+import com.dropbox.core.{ DbxClient, DbxRequestConfig }
 
 import models._
-import helpers._ 
 
-object Transfer extends Controller with FileHelper {
-
-  val key = Play.current.configuration.getString("drpbx.key").get
-  val secret = Play.current.configuration.getString("drpbx.secret").get
-  val appInfo = new DbxAppInfo(key, secret)
+object Transfer extends Controller with JsonImplicits {
   val dbConfig = new DbxRequestConfig("DLTS", Locale.getDefault().toString)
-  
-  def transfer = Action { request =>
-    val paths = request.body.asFormUrlEncoded.get("files[]")
-    val donorNote = request.body.asFormUrlEncoded.get("donorNote")(0)
-    val xferName = request.body.asFormUrlEncoded.get("xferName")(0)
-    request.session.get("email") match {
-      case Some(email) => {
-        val user = DB.withSession{ implicit session => Users.findByEmail(email)}
-        val xferUUID = UUID.randomUUID
-        val client = new DbxClient(dbConfig, user.token)
-        var files = Vector.empty[File]
-        val now = new java.sql.Date(new java.util.Date().getTime())
-        DB.withSession{ implicit session =>
-          Transfers.insert(new Transfer(xferUUID, user.id.get, xferName, now, 1, "", "", donorNote))
-          paths.foreach{path =>
-            Files.insert(getFile(xferUUID, user.id.get, path, client))
-          }
+  implicit val context = play.api.libs.concurrent.Execution.Implicits.defaultContext
+
+  def index = Action.async { implicit request =>
+    request.session.get("id") match {
+      case Some(id) => {
+        val url = s"http://localhost:8080/donor/$id/token"
+        WS.url(url).get.map { response =>
+          val jsonResponse: JsValue = response.json
+          val result: JsBoolean = (jsonResponse \ "result").as[JsBoolean]
+          result.value match {
+            case true => {
+              val token = (jsonResponse \ "token").as[JsString].value
+              val client = new DbxClient(dbConfig, token)
+              val listing = client.getMetadataWithChildren("/")
+              Ok(views.html.transfer.index(listing.children, listing.entry))
+            } case false => Ok("ko")
+          }   
         }
-        Redirect(routes.Donor.user).flashing{"success" -> ("Transfer " + xferUUID + " Created")}
-      } case None => Redirect(routes.Donor.index)
+      } case None => Future.successful(Redirect(routes.Donor.index).flashing("denied" -> "You do not have a valid session, please login."))
     }
-  }  
-
-
-  def getFile(transUUID: UUID, userId: Long, path: String, client: DbxClient): File = {
-    val md = client.getMetadata(path).asFile
-    val path2 = path.substring(0, path.length - md.name.length)
-    new File(UUID.randomUUID, userId, transUUID, md.rev, md.name, path2, md.humanSize, md.numBytes, new java.sql.Date(md.lastModified.getTime), "Queued")
   }
 
-  def entry(path: String) = Action{ request =>
-    request.session.get("email") match {
-      case Some(email) => {
-        val user = DB.withSession{ implicit session => Users.findByEmail(email)}
-        val decodedPath = new String(new sun.misc.BASE64Decoder().decodeBuffer(path))
-        val client = new DbxClient(dbConfig, user.token)
-        val entries = getEntryMap(decodedPath, client)
-        Ok(views.html.entry(decodedPath, entries))
-      }
-      case None => Redirect(routes.Donor.index)
+  def entry(path: String) = Action.async { implicit request =>
+    request.session.get("id") match {
+      case Some(id) => {
+        val url = s"http://localhost:8080/donor/$id/token"
+        WS.url(url).get.map { response =>
+          val jsonResponse: JsValue = response.json
+          val result: JsBoolean = (jsonResponse \ "result").as[JsBoolean]
+          result.value match {
+            case true => {
+              val token = (jsonResponse \ "token").as[JsString].value
+              val decodedPath = new String(new sun.misc.BASE64Decoder().decodeBuffer(path))
+              val entries = getEntryMap(decodedPath, new DbxClient(dbConfig, token))
+              Ok(views.html.transfer.entry(decodedPath, entries))
+            } case false => Ok("ko")
+          }
+        }
+      } case None => Future.successful(Redirect(routes.Donor.index).flashing("denied" -> "You do not have a valid session, please login."))
+    }
+  }
+
+  def save = Action.async { implicit request =>
+    request.session.get("id") match {
+      case Some(id) => {
+        
+        val form = request.body.asFormUrlEncoded 
+        val now = new java.sql.Date(new java.util.Date().getTime())
+        val paths = form.get("files[]")
+        var seq = Seq.empty[String]
+        val title = form.get("xferName")(0)
+        for(path <- paths){ seq = seq ++ Seq(path)}
+        val jsonRequest = Json.obj(
+          "donorId" -> id, 
+          "title" -> title, 
+          "date" -> now, 
+          "donorNote" -> form.get("donorNote")(0), 
+          "paths" -> Json.toJson(seq)
+        )
+
+        //
+        val url = s"http://localhost:8080/transfer"
+        WS.url(url).post(jsonRequest).map { response => 
+          val jsonResponse: JsValue = response.json
+          val result: JsBoolean = (jsonResponse \ "result").as[JsBoolean]
+          result.value match { 
+            case true => { 
+              val count = (jsonResponse \ "count").as[JsNumber].toString
+              Redirect(routes.Donor.index()).flashing("success" -> s"$title transferred [$count files]") 
+            }
+            case false => Ok("ko")
+          }
+        }
+      } case None => Future.successful(Redirect(routes.Donor.index).flashing("denied" -> "You do not have a valid session, please login."))
     }
   }
 
@@ -83,19 +115,5 @@ object Transfer extends Controller with FileHelper {
     if(!files.isEmpty) dirs = dirs ++ Map(path -> files)
     dirs
   }
-
-  def show(uuid: String) = Action{ request =>
-    request.session.get("email") match {
-      case Some(email) => {
-        val user = DB.withSession{ implicit session => Users.findByEmail(email)}
-        val transfer = DB.withSession { implicit session => Transfers.findTransferById(UUID.fromString(uuid))}
-        val files = DB.withSession{ implicit session => Files.getFilesByTransferId(UUID.fromString(uuid))}
-        val summary = summarizeFiles(files)
-        Ok(views.html.show(user, transfer, summary, files))
-      }  
-      case None => Redirect(routes.Donor.index)
-    }
-  }
-
-
+  
 }

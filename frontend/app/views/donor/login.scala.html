@@ -1,4 +1,4 @@
-@(loginForm: Form[Login])
+@()(implicit flash: Flash)
 <!DOCTYPE html>
 <html>
     <head>
@@ -7,8 +7,11 @@
       <link href="@routes.Assets.at("stylesheets/main.css")" rel="stylesheet">
     </head>
     <body>
-      <form class="form-signin" role="form" action="/user" method="post">
+      <form class="form-signin" role="form" action="/validate" method="post">
         <h2 class="form-signin-heading text-center">DRPBXACQ</h2>
+        <div class="bg-danger">@flash.get("denied")</div>
+        <div class="bg-error">@flash.get("error")</div>
+        <div class="bg-info">@flash.get("info")</div>
         <div class="form-group">
           <label>email</label>
           <input type="email" class="form-control" name="email" required autofocus>
@@ -19,7 +22,7 @@
         </div>        
         <button class="btn btn-lg btn-primary" type="submit">Sign in</button>
         <br>
-        <div class="text-center">or<br><a href="/user/create">register</a></div>
+        <div class="text-center">or<br><a href="/create">register</a></div>
       </form>
     </body>
 </html>

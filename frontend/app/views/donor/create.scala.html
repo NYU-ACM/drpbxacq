@@ -1,6 +1,5 @@
-@(keyForm: Form[User], url: String)
+@(keyForm: Form[models.DonorModel], url: String)
 @import helper._
-@import helper.twitterBootstrap._
 
 <!DOCTYPE html>
 <html>
@@ -20,11 +19,11 @@
           <br><br>
         </div>
         <fieldset>
-          @inputText(keyForm("email"), '_label -> "email")
-          @inputText(keyForm("name"), '_label -> "name")
-          @inputText(keyForm("org"), '_label -> "org")
-          @inputPassword(keyForm("password"), '_label -> "password")
-          @inputText(keyForm("token"), '_label -> "token") 
+          @helper.inputText(keyForm("email"), '_label -> "email")
+          @helper.inputText(keyForm("name"), '_label -> "name")
+          @helper.inputText(keyForm("org"), '_label -> "org")
+          @helper.inputPassword(keyForm("password"), '_label -> "password")
+          @helper.inputText(keyForm("token"), '_label -> "token") 
         </fieldset>   
         <button class="btn btn-lg btn-primary text-center" type="submit">Register</button>
         <br>

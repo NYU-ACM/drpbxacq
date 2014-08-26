@@ -5,6 +5,7 @@ import scala.slick.jdbc.JdbcBackend.Database
 import edu.nyu.dlts.drpbx.backend.domain.DBProtocol._
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.UUID
 
 class DBModel(name: String, dal: DAL, db: Database) {
 
@@ -17,5 +18,16 @@ class DBModel(name: String, dal: DAL, db: Database) {
   def createDB = dal.create
   def dropDB = dal.drop
   def insertAdmin(admin: Admin) = dal.createAdmin(admin)
-  def loginAdmin(login: Login): Option[Admin] = dal.validateLogin(login)
+  def loginAdmin(login: Login): Option[Admin] = dal.validateAdminLogin(login)
+  def insertDonor(donor: Donor) = dal.createDonor(donor)
+  def loginDonor(login: Login): Option[Donor] = dal.validateDonorLogin(login)
+  def getDonor(email: String): Option[Donor] = dal.getDonorByEmail(email)
+  def getDonorWeb(id: UUID): Option[DonorWeb] = dal.getDonorById(id)
+  def getDonorToken(id: UUID): Option[String] = dal.getTokenById(id)
+  def insertTransfer(req: TransferReq): TransferResponse = dal.createTransfer(req)
+  def getTransfers(): List[TransferWeb] = dal.getAllTransfers
+  def getDonorTransfers(req: DonorTransfersReq): Option[List[TransferWeb]] = dal.getTransfersById(req)
+  def getTransferById(req: TransferId): Option[TransferWeb] = dal.getTransfer(req)
+  def getFilesByTransId(req: TransferId): List[FileWeb] = dal.getFilesByTransferId(req)
+  
 }

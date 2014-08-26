@@ -1,21 +1,20 @@
 package controllers
 
-import play.api._
-import play.api.mvc._
-import play.api.data._
-import play.api.data.Forms._
-import play.api.db.slick._
-import play.api.Play.current
-
-
-import com.dropbox.core._
-import java.util.Locale
-import java.security.MessageDigest
-import org.apache.commons.codec.binary.Hex
-
 import models._
 
-object Donor extends Controller {
+import play.api._
+import play.api.libs.json._
+import play.api.mvc._
+import play.api.libs.ws._
+import play.api.data._
+import play.api.data.Forms._
+import play.api.Play.current
+import scala.concurrent.Future
+import com.dropbox.core.{ DbxAppInfo, DbxRequestConfig, DbxWebAuthNoRedirect }
+import java.util.{ UUID, Locale }
+import models._
+
+object Donor extends Controller with JsonImplicits with FileSummarySupport {
 
   val key = Play.current.configuration.getString("drpbx.key").get
   val secret = Play.current.configuration.getString("drpbx.secret").get
@@ -23,90 +22,111 @@ object Donor extends Controller {
   val dbConfig = new DbxRequestConfig("DLTS", Locale.getDefault().toString)
   val webAuth = new DbxWebAuthNoRedirect(dbConfig, appInfo)
   val url = webAuth.start
-
-  def index = Action { Ok(views.html.login(loginForm)) }
-
-  def create = Action {    
-    Ok(views.html.create(keyForm, url))
+  implicit val context = play.api.libs.concurrent.Execution.Implicits.defaultContext
+  
+  def login = Action { implicit request =>
+  	Ok(views.html.donor.login())
   }
 
-  def login = Action { request =>  
-    val email = request.body.asFormUrlEncoded.get("email").head
-    val hash = request.body.asFormUrlEncoded.get("password").head
-    Redirect(routes.Donor.validateLogin(email, hash))
+  def create = Action {    
+    Ok(views.html.donor.create(keyForm, url))
+  }
+
+  def save = Action.async { implicit request =>
+    val form = request.body.asFormUrlEncoded
+    val url = s"http://localhost:8080/donor/create"
+    val token = webAuth.finish(form.get("token").head).accessToken
+    val backendRequest = 
+      Map(
+        "requestId" -> Seq(UUID.randomUUID.toString),
+        "email" -> Seq(form.get("email").head),
+        "password" -> Seq(form.get("password").head),
+        "org" -> Seq(form.get("org").head),
+        "name" -> Seq(form.get("name").head),
+        "token" -> Seq(token)
+      )
+      
+    WS.url(url).post(backendRequest).map { response => 
+      val jsonResponse: JsValue = response.json
+      val result: JsBoolean = (jsonResponse \ "result").as[JsBoolean]
+      result.value match {
+        case true => Redirect(routes.Donor.index).flashing("info" -> ("Successfully registered " + (jsonResponse \ "name").toString) )
+        case false => Redirect(routes.Donor.index).flashing("error" -> "Cold not register account")
+      }
+    }
+  }
+
+  def validate = Action.async { implicit request =>
+    val form = request.body.asFormUrlEncoded
+    val email = form.get("email").head 
+    val password = form.get("password").head
+    val url = s"http://localhost:8080/donor/login?email=$email&password=$password"
+
+    WS.url(url).get.map { response =>
+      val jsonResponse: JsValue = response.json
+      val result: JsBoolean = (jsonResponse \ "result").as[JsBoolean]
+      result.value match {
+        case true => Redirect(routes.Donor.index).withSession("id" -> (jsonResponse \ "id").as[JsString].value)
+        case false => Redirect(routes.Donor.login).flashing("denied" -> "Credentials could not be validated.")
+      }
+    }
   }
 
   def logout = Action { request =>
-    Redirect(routes.Donor.index).withNewSession
+    Redirect(routes.Donor.login).withNewSession.flashing("info" -> "Succesfully Logged out")
   }
 
-  def validateLogin(email: String, hash: String) = DBAction { implicit rs =>
-    Users.validateLogin(email, hash) match {
-      case Some(user) => Redirect(routes.Donor.user).withSession("email" -> user.email)
-      case None => Redirect(routes.Donor.index)
-    }
-  }
-
-  def user = Action { implicit request =>
-    request.session.get("email") match {
-      
-      case Some(email) => { 
-        val user = DB.withSession{ implicit session => Users.findByEmail(email) }
-        val pendingXfers = DB.withSession{ implicit session => Transfers.getTransfersByStatus(1) } 
-        val activeXfers = DB.withSession{ implicit session => Transfers.getTransfersByStatus(2) } 
-        val cancelledXfers = DB.withSession{ implicit session => Transfers.getTransfersByStatus(3) } 
-        val completeXfers = DB.withSession{ implicit session => Transfers.getTransfersByStatus(4) } 
-        Ok(views.html.home(user, pendingXfers, activeXfers, cancelledXfers, completeXfers))
+  def index = Action.async { implicit request =>
+    request.session.get("id") match {
+      case Some(id) => {
+        var pendingXfers = Vector.empty[XferWeb]
+        WS.url(s"http://localhost:8080/donor/$id/transfers").get.map { response =>
+          val json: JsValue = response.json
+          val result: JsBoolean = (json \ "result").as[JsBoolean]
+          result.value match {
+            case true => {
+              (json \ "transfers").as[List[XferWeb]].foreach{ xfer =>
+                if(xfer.status == 1) pendingXfers = pendingXfers ++ Vector(xfer)
+              }
+              Ok(views.html.donor.index(pendingXfers))
+            }
+            case false =>  Redirect(routes.Donor.index)
+          }
+        }
       }
-
-      case None => Redirect(routes.Donor.index)
-    }
-  }
-
-  def transfer = Action { implicit request =>
-    request.session.get("email") match {
-      case Some(email) => {
-        val user = DB.withSession{ implicit session => Users.findByEmail(email)}
-        val client = new DbxClient(dbConfig, user.token)
-        val listing = client.getMetadataWithChildren("/")
-        Ok(views.html.user(listing.children, listing.entry))
-      } 
-      case None => Redirect(routes.Donor.index)
+      case None => Future.successful(Redirect(routes.Donor.login).flashing("denied" -> "You do not have a valid session, please login."))
     } 
   }
 
-  def save = DBAction { implicit rs =>
-    keyForm.bindFromRequest.fold(
-      formWithErrors => BadRequest(views.html.create(keyForm, url)),
-      user => {
-        val md5 = MessageDigest.getInstance("MD5").digest(user.passMd5.getBytes)
-        val code = new String(Hex.encodeHexString(md5))
-        val user2 = new User(user.id, user.email, user.name, user.org, code, webAuth.finish(user.token).accessToken)        
-        Users.insert(user2)
-        Redirect(routes.Donor.user).withSession("token" -> user2.token)
-      }
-    )
+  def transfer(transferId: String) = Action.async { implicit request =>
+    request.session.get("id") match {
+      case Some(id) => {
+       WS.url(s"http://localhost:8080/transfer/$transferId").get.map { response =>
+          val json: JsValue = response.json
+          val result: JsBoolean = (json \ "result").as[JsBoolean]
+          result.value match {
+            case true => { 
+              val transfer = (json \ "transfer").as[XferWeb]
+              val files = (json \ "files").as[List[FileWeb]]
+              val donor = (json \ "donor").as[DonorWeb]
+              val summary = summarizeFiles(files)
+              Ok(views.html.donor.transfer(transfer, files, donor, summary)) 
+            }
+            case false =>  Redirect(routes.Donor.index)
+          }
+        }
+      } case None => Future.successful(Redirect(routes.Donor.login).flashing("denied" -> "You do not have a valid session, please login."))
+    }
   }
 
-  /**
-   *Form for key
-   */
-  
   val keyForm = Form(
     mapping(
-      "id" -> optional(longNumber),
+      "id" -> nonEmptyText,
       "email" -> nonEmptyText,
       "name" -> nonEmptyText,
       "org" -> nonEmptyText,
       "password" -> nonEmptyText, 
       "token" -> nonEmptyText
-    )(User.apply)(User.unapply)
-  )
-
-  val loginForm = Form(
-    mapping(
-      "email" -> nonEmptyText,
-      "password" -> nonEmptyText
-    )(Login.apply)(Login.unapply)
+    )(DonorModel.apply)(DonorModel.unapply)
   )
 }

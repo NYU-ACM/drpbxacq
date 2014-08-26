@@ -31,6 +31,7 @@ object DrpbxBackendBuild extends Build {
         "com.typesafe.slick" % "slick_2.11" % "2.1.0-RC3",
         "commons-codec" % "commons-codec" % "1.9",
         "postgresql" % "postgresql" % "9.1-901.jdbc4",
+        "com.dropbox.core" % "dropbox-core-sdk" % "1.7.6",
         "com.typesafe.akka" %% "akka-actor" % "2.3.4",
         "net.databinder.dispatch" %% "dispatch-core" % "0.11.1",
         "ch.qos.logback" % "logback-classic" % "1.0.6" % "runtime",

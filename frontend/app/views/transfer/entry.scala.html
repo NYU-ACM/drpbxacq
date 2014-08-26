@@ -1,14 +1,14 @@
 @(path: String, dirs: Map[String, Vector[Entry]])
-@import java.util.UUID
 
-@main("DRPBXACQ"){
+
+@transfer("DRPBXACQ"){
   <p>Uncheck any files to remove them from the transfer</p>
   <div class="lead"><strong>@path</strong></div></br>
   
   <form method="post" action="/transfer">
     @for(dir <- dirs){
       @defining(new String(new sun.misc.BASE64Encoder().encodeBuffer(dir._1.getBytes))) { message =>
-        <div class="lead"><a href="/entry/@message">@dir._1</a></div><br/>
+        <div class="lead"><a href="/transfer/@message/view">@dir._1</a></div><br/>
         <table class="table table-striped form-dbxentry">
           <tr>
             <th/>

@@ -2,52 +2,34 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-# Donor Routes
-GET    	/					controllers.Donor.index
+# Home page
+GET 	/								controllers.Donor.index
 
-POST   	/user				controllers.Donor.login
+GET 	/create							controllers.Donor.create
 
-GET    	/user/create		controllers.Donor.create
+POST   	/donor							controllers.Donor.save
 
-POST   	/user/save			controllers.Donor.save
+GET  	/login							controllers.Donor.login
 
-GET    	/user/logout		controllers.Donor.logout
+POST	/validate 						controllers.Donor.validate 
 
-GET    	/user		        controllers.Donor.user
+GET		/logout							controllers.Donor.logout
 
-GET    	/user/authenticate	controllers.Donor.validateLogin(email: String, hash: String)
+GET     /admin                         	controllers.Admin.index
 
-GET	   	/user/transfer		controllers.Donor.transfer
+GET     /admin/login                    controllers.Admin.login
 
-# Admin Routes
-GET		/admin				controllers.Admin.index
+GET     /admin/logout                    controllers.Admin.logout
 
-POST	/admin 				controllers.Admin.login
+POST	/admin 							controllers.Admin.validateLogin
 
-GET    	/admin/authenticate	controllers.Admin.validateLogin(email: String, hash: String)
+GET		/transfer						controllers.Transfer.index
 
-GET     /admin/home 		controllers.Admin.home
+GET		/transfer/:path/view			controllers.Transfer.entry(path: String)
 
-GET   	/admin/insert		controllers.Admin.insert
+POST	/transfer 						controllers.Transfer.save
 
-GET    	/admin/logout		controllers.Admin.logout
-
-GET		/admin/transfer/:uuid  	controllers.Admin.transfer(uuid: String)	
-
-POST	/admin/approve		controllers.Admin.approve
-
-POST	/admin/cancel		controllers.Admin.cancel
-
-GET		/submit				controllers.Admin.submit
-
-# Transfer Routes
-
-GET	   	/entry/:path		controllers.Transfer.entry(path: String)
-
-GET		/transfer/:uuid		controllers.Transfer.show(uuid: String)
-
-POST /transfer 				controllers.Transfer.transfer	
+GET		/donor/transfer/:transferId/show		controllers.Donor.transfer(transferId: String)
 
 # Map static resources from the /public folder to the /assets URL path
-
-GET     /assets/*file       controllers.Assets.at(path="/public", file)
+GET     /assets/*file               controllers.Assets.at(path="/public", file)

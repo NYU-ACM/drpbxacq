@@ -1,5 +1,5 @@
-@(listing: java.util.List[com.dropbox.core.DbxEntry], entry: com.dropbox.core.DbxEntry)(implicit flash: Flash)
-@main("DRPBXACQ"){
+@(listing: java.util.List[com.dropbox.core.DbxEntry], entry: com.dropbox.core.DbxEntry)
+@transfer("DRPBXACQ"){
  
   <br />
   <h2>Start A Transfer</h2>
@@ -13,9 +13,9 @@
 	  <td>@dbx_entry.name</td>
 	}
 	@if(dbx_entry.isFolder){
-	  @defining(new String(new sun.misc.BASE64Encoder().encodeBuffer(dbx_entry.path.getBytes))) { message =>
+	  @defining(new String(new sun.misc.BASE64Encoder().encodeBuffer(dbx_entry.path.getBytes))) { path =>
 	    <td>
-	      <a href="/entry/@message">@dbx_entry.path</a>
+	      <a href="/transfer/@path/view">@dbx_entry.path</a>
 	    </td>
 	  }
 	}

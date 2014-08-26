@@ -1,0 +1,72 @@
+@(xfer: models.XferWeb, files: List[models.FileWeb], donorWeb: models.DonorWeb, summary: Map[String, Tuple2[Int, Long]])(implicit flash: Flash)
+@import java.util.Date
+@import java.text.SimpleDateFormat
+
+@donor("DRPBXACQ") {
+  <h2>@xfer.title</h2>
+
+  <table class="table table-striped form-dbxentry">
+    <thead>
+      <tr>
+        <th>transferred by</t>
+      	<th>organization</th>
+      	<th>transfer date</th>
+      	<th>status</th>
+      	<th>note</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+      	<td>@donorWeb.name</td>
+      	<td>@donorWeb.org</td>
+      	@defining(new SimpleDateFormat("yyyy-MM-dd").format(new Date(xfer.xferDate))){ date =>
+          <td>@date</td>
+        }
+      	<td>@xfer.status</td>
+      	<td>@xfer.donorNote</td>
+    </tbody>
+  </table>
+
+  <div class="lead">Summary</div>
+  <table class="table table-striped form-dbxentry">
+    <tr>
+      <th>ext</th>
+      <th>count</th>
+      <th>size</th>
+    </tr>
+    @for(filetype <- summary){
+      <tr>
+        <td>@filetype._1</td>
+        <td>@filetype._2._1</td>
+
+        <td>@scala.math.BigDecimal(((filetype._2._2 / 1024.00) / 1024.00)).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble MB</td>
+      </tr>      
+    } 
+  </table>
+
+  <div class="lead">File Manifest</div>
+  <div class="form-dbxentry">
+    <table class="table table-striped">
+   	  <thead>
+	    <tr>
+  	  	  <th>name</th>
+      	  <th>path</th>
+      	  <th>rev</th>
+	      <th>size</th>
+	      <th>status</th>
+  	    </tr>
+      </thead>
+      <tbody>
+	    @for(file <- files){
+	      <tr>
+	      	<td>@file.filename</td>
+	        <td>@file.path</td> 
+	        <td>@file.rev</td>
+	      	<td>@file.humanSize</td>
+	      	<td>@file.status</td>
+	      </tr>
+	    }      	
+      </tbody>
+    </table>
+  </div>
+}
