@@ -143,7 +143,7 @@ class Backend(system: ActorSystem ) extends DrpbxBackendStack with JacksonJsonSu
     }
   }
 
-  get("/transfer/all") {
+  get("/transfers") {
     implicit val timeout = Timeout(10 seconds)  
     val future = dbActor ? TransferAll
     val result = Await.result(future, timeout.duration)

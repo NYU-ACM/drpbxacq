@@ -31,5 +31,7 @@ POST	/transfer 						controllers.Transfer.save
 
 GET		/donor/transfer/:transferId/show		controllers.Donor.transfer(transferId: String)
 
+GET		/admin/transfer/:transferId/show		controllers.Admin.transfer(transferId: String)
+
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.at(path="/public", file)

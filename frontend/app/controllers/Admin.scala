@@ -8,7 +8,8 @@ import play.api.Play.current
 import scala.concurrent.Future
 import scala.util.{ Success, Failure }
 import models._
-object Admin extends Controller with JsonImplicits {
+
+object Admin extends Controller with JsonImplicits with FileSummarySupport {
   
   implicit val context = play.api.libs.concurrent.Execution.Implicits.defaultContext
 
@@ -37,8 +38,8 @@ object Admin extends Controller with JsonImplicits {
     request.session.get("admin") match {
       case Some(admin) => { 
         var pendingXfers = Vector.empty[XferWeb]
-        WS.url("http://localhost:8080/transfer/all").get.map { response =>
-      	  val json: JsValue = response.json
+        WS.url("http://localhost:8080/transfers").get.map { response =>
+          val json: JsValue = response.json
           val result: JsBoolean = (json \ "result").as[JsBoolean]
           result.value match {
             case true => {
@@ -49,9 +50,30 @@ object Admin extends Controller with JsonImplicits {
             }
             case false => Ok("ko")
           }
-        }
+        } 
       }
       case None => Future.successful(Redirect(routes.Admin.login).flashing("denied" -> "You do not have a valid admin session, please login."))
     }
   }
+
+  def transfer(transferId: String) = Action.async { implicit request =>
+    request.session.get("admin") match {
+      case Some(admin) => {
+       WS.url(s"http://localhost:8080/transfer/$transferId").get.map { response =>
+          val json: JsValue = response.json
+          val result: JsBoolean = (json \ "result").as[JsBoolean]
+          result.value match {
+            case true => { 
+              val transfer = (json \ "transfer").as[XferWeb]
+              val files = (json \ "files").as[List[FileWeb]]
+              val donor = (json \ "donor").as[DonorWeb]
+              val summary = summarizeFiles(files)
+              Ok(views.html.admin.transfer(transfer, files, donor, summary)) 
+            }
+            case false =>  Redirect(routes.Admin.index)
+          }
+        }
+      } case None => Future.successful(Redirect(routes.Donor.login).flashing("denied" -> "You do not have a valid session, please login."))
+    }
+  }  
 }
