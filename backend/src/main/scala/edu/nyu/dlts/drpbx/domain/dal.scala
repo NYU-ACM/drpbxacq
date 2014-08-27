@@ -93,7 +93,7 @@ class DAL(override val profile: JdbcProfile) extends DrpbxAcq with Profile {
   def getAllTransfers()(implicit s: Session): List[TransferWeb] = {
     var xfers = List.empty[TransferWeb]
     for(transfer <- transfers){
-      val xfer = new TransferWeb(transfer.id.toString, transfer.donorId.toString, transfer.title, transfer.xferDate.getTime, transfer.status, transfer.accessionId.get, transfer.adminNote.get, transfer.donorNote.get)
+      val xfer = new TransferWeb(transfer.id.toString, transfer.donorId.toString, transfer.title, transfer.xferDate.getTime, transfer.status, transfer.accessionId, transfer.adminNote, transfer.donorNote)
       xfers = xfers ++ List(xfer)
     }
     xfers
@@ -105,7 +105,7 @@ class DAL(override val profile: JdbcProfile) extends DrpbxAcq with Profile {
     if(trans.isEmpty) None 
     else {
       for(transfer <- trans){
-        val xfer = new TransferWeb(transfer.id.toString, transfer.donorId.toString, transfer.title, transfer.xferDate.getTime, transfer.status, transfer.accessionId.get, transfer.adminNote.get, transfer.donorNote.get)
+        val xfer = new TransferWeb(transfer.id.toString, transfer.donorId.toString, transfer.title, transfer.xferDate.getTime, transfer.status, transfer.accessionId, transfer.adminNote, transfer.donorNote)
         xfers = xfers ++ List(xfer)
       }
       Some(xfers)
@@ -117,7 +117,7 @@ class DAL(override val profile: JdbcProfile) extends DrpbxAcq with Profile {
     if(trans.isEmpty) None
     else{
       val transfer = trans.head 
-      Some(new TransferWeb(transfer.id.toString, transfer.donorId.toString, transfer.title, transfer.xferDate.getTime, transfer.status, transfer.accessionId.get, transfer.adminNote.get, transfer.donorNote.get))
+      Some(new TransferWeb(transfer.id.toString, transfer.donorId.toString, transfer.title, transfer.xferDate.getTime, transfer.status, transfer.accessionId, transfer.adminNote, transfer.donorNote))
     }
   }
 

@@ -35,6 +35,9 @@ class Backend(system: ActorSystem ) extends DrpbxBackendStack with JacksonJsonSu
     "nothing here"
   }
 
+  get("/some") {
+    Map("some" -> Some("hello"), "none" -> None, "test" -> Some(1))
+  }
   get("/ping") {
    Vector("pong")
   }
@@ -114,7 +117,7 @@ class Backend(system: ActorSystem ) extends DrpbxBackendStack with JacksonJsonSu
 
     result match {
       case Some(donor) => { 
-        Map("result" -> true, "donor" -> Map("id" -> donor.id.toString, "email" -> donor.email, "name" -> donor.name, "org" -> donor.org, "token" -> donor.token, "md5" -> donor.passMd5))
+        Map("result" -> true, "id" -> donor.id.toString)
       }
       case None => Map("result" -> false)
     }
