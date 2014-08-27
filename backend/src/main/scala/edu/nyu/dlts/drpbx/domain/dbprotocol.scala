@@ -12,7 +12,7 @@ object DBProtocol {
   case class Login(name: String, password: String)
   case class Donor(id: UUID, email: String, name: String, org: String, passMd5: String, token:String)
   case class DonorWeb(id: String, name: String, org: String)
-  case class Transfer(id: UUID, donorId: UUID, title: String, xferDate: java.sql.Date, status: Int, accessionId: String, adminNote: String, donorNote: String)
+  case class Transfer(id: UUID, donorId: UUID, title: String, xferDate: java.sql.Date, status: Int, accessionId: Option[String], adminNote: Option[String], donorNote: Option[String])
   case class TransferWeb(id: String, donorId: String, title: String, xferDate: Long, status: Int, accessionId: String, adminNote: String, donorNote: String)
   case class File(id: UUID, xferId: UUID, rev: String, filename: String, path: String, humanSize: String, size: Long, modDate: java.sql.Date, status: String)
   case class FileWeb(id: String, xferId: String, rev: String, filename: String, path: String, humanSize: String,size: Long, modDate: Long, status: String)

@@ -70,7 +70,7 @@ class DAL(override val profile: JdbcProfile) extends DrpbxAcq with Profile {
   def createTransfer(req: TransferReq)(implicit s: Session): TransferResponse = {  
     val xferId = UUID.randomUUID
     val date = new java.sql.Date(req.date)
-    val transfer = new Transfer(xferId, UUID.fromString(req.donorId), req.title,  date, 1, "", "", req.donorNote)
+    val transfer = new Transfer(xferId, UUID.fromString(req.donorId), req.title,  date, 1, None, None, Some(req.donorNote))
     transfers.insert(transfer)
     logger.info(transfer.title + " CREATED")
 
@@ -93,7 +93,7 @@ class DAL(override val profile: JdbcProfile) extends DrpbxAcq with Profile {
   def getAllTransfers()(implicit s: Session): List[TransferWeb] = {
     var xfers = List.empty[TransferWeb]
     for(transfer <- transfers){
-      val xfer = new TransferWeb(transfer.id.toString, transfer.donorId.toString, transfer.title, transfer.xferDate.getTime, transfer.status, transfer.accessionId, transfer.adminNote, transfer.donorNote)
+      val xfer = new TransferWeb(transfer.id.toString, transfer.donorId.toString, transfer.title, transfer.xferDate.getTime, transfer.status, transfer.accessionId.get, transfer.adminNote.get, transfer.donorNote.get)
       xfers = xfers ++ List(xfer)
     }
     xfers
@@ -105,7 +105,7 @@ class DAL(override val profile: JdbcProfile) extends DrpbxAcq with Profile {
     if(trans.isEmpty) None 
     else {
       for(transfer <- trans){
-        val xfer = new TransferWeb(transfer.id.toString, transfer.donorId.toString, transfer.title, transfer.xferDate.getTime, transfer.status, transfer.accessionId, transfer.adminNote, transfer.donorNote)
+        val xfer = new TransferWeb(transfer.id.toString, transfer.donorId.toString, transfer.title, transfer.xferDate.getTime, transfer.status, transfer.accessionId.get, transfer.adminNote.get, transfer.donorNote.get)
         xfers = xfers ++ List(xfer)
       }
       Some(xfers)
@@ -117,7 +117,7 @@ class DAL(override val profile: JdbcProfile) extends DrpbxAcq with Profile {
     if(trans.isEmpty) None
     else{
       val transfer = trans.head 
-      Some(new TransferWeb(transfer.id.toString, transfer.donorId.toString, transfer.title, transfer.xferDate.getTime, transfer.status, transfer.accessionId, transfer.adminNote, transfer.donorNote))
+      Some(new TransferWeb(transfer.id.toString, transfer.donorId.toString, transfer.title, transfer.xferDate.getTime, transfer.status, transfer.accessionId.get, transfer.adminNote.get, transfer.donorNote.get))
     }
   }
 

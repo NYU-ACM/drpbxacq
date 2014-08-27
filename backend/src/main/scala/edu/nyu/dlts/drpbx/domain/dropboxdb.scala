@@ -41,9 +41,9 @@ trait DrpbxAcq {
     def title = column[String]("TITLE", O.NotNull)
     def xferDate = column[java.sql.Date]("XFER_DATE", O.NotNull)
     def status = column[Int]("STATUS", O.NotNull)
-    def accessionId = column[String]("ACCESSION_ID", O.NotNull)
-    def adminNote = column[String]("ADMIN_NOTE", O.NotNull)
-    def donorNote = column[String]("DONOR_NOTE", O.NotNull)
+    def accessionId = column[Option[String]]("ACCESSION_ID", O.Nullable)
+    def adminNote = column[Option[String]]("ADMIN_NOTE", O.Nullable)
+    def donorNote = column[Option[String]]("DONOR_NOTE", O.Nullable)
     def * = (id, donorId, title, xferDate, status, accessionId, adminNote, donorNote) <> (Transfer.tupled, Transfer.unapply _)
     def donor = foreignKey("DNR_FK", donorId, donors)(_.id)
   }
