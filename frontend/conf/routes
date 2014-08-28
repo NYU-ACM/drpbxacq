@@ -33,5 +33,7 @@ GET		/donor/transfer/:transferId/show		controllers.Donor.transfer(transferId: St
 
 GET		/admin/transfer/:transferId/show		controllers.Admin.transfer(transferId: String)
 
+GET		/file/show						controllers.DbxFile.show
+
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.at(path="/public", file)

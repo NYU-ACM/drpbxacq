@@ -115,5 +115,4 @@ object Transfer extends Controller with JsonImplicits {
     if(!files.isEmpty) dirs = dirs ++ Map(path -> files)
     dirs
   }
-  
 }

@@ -26,6 +26,7 @@ class Backend(system: ActorSystem ) extends DrpbxBackendStack with JacksonJsonSu
   
   val dbActor = system.actorOf(Props[DbActor], name = "db")
   val dnrActor = system.actorOf(Props[DonorActor], name = "donor")
+  val fileActor = system.actorOf(Props[FileActor], name = "file")
 
   before() {
     contentType = formats("json")
@@ -33,13 +34,6 @@ class Backend(system: ActorSystem ) extends DrpbxBackendStack with JacksonJsonSu
 
   get("/") {
     "nothing here"
-  }
-
-  get("/some") {
-    Map("some" -> Some("hello"), "none" -> None, "test" -> Some(1))
-  }
-  get("/ping") {
-   Vector("pong")
   }
 
   get("/admin") {
@@ -171,8 +165,27 @@ class Backend(system: ActorSystem ) extends DrpbxBackendStack with JacksonJsonSu
     result match {
       case Some(xfers) => Map("result" -> true, "transfers" -> xfers) 
       case None => Map("result" -> false) 
+    } 
+  }
+
+  get("/file/:id/show") {
+    implicit val timeout = Timeout(5 seconds)
+    val file = new FileReq(UUID.fromString(params("id")))
+    val future = fileActor ? file
+    Await.result(future, timeout.duration) match {
+      case Some(file) => Map("result" -> true, "file" -> file) 
+      case None => Map("result" -> false) 
+    } 
+  }
+
+}
+
+class FileActor extends Actor with DrpbxDbSupport {
+  val logger: Logger = LoggerFactory.getLogger("drpbx.fileactor")
+  def receive = {
+    case req: FileReq => {
+      sender ! Some("test")
     }
-    
   }
 
 }

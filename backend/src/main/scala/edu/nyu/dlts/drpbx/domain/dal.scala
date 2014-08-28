@@ -130,4 +130,8 @@ class DAL(override val profile: JdbcProfile) extends DrpbxAcq with Profile {
     }
     f
   }
+
+  def getFileForDL(req: FileReq)(implicit s: Session): Map[String] = {
+    Map("file" -> "f", "transferId" -> "t", "token" -> "t")
+  }
 }

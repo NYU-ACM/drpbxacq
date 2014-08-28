@@ -24,4 +24,5 @@ object DBProtocol {
   case class TransferId(id: UUID)
   case class TransferResponse(result: Boolean, count: Int)
   case class DonorTransfersReq(id: UUID)
+  case class FileReq(id: UUID)
 }
