@@ -17,10 +17,14 @@ import org.apache.commons.codec.binary.Hex
 import java.security.MessageDigest  
 import java.util.UUID
 
-class Backend(system: ActorSystem ) extends DrpbxBackendStack with JacksonJsonSupport with FutureSupport {
+import edu.nyu.dlts.drpbx.backend.serializers._
+
+
+
+class Backend(system: ActorSystem ) extends DrpbxBackendStack with JacksonJsonSupport with FutureSupport with Serializers {
   
   val logger: Logger = LoggerFactory.getLogger("drpbx.rest")
-  protected implicit val jsonFormats: Formats = DefaultFormats
+  
   implicit val timeout = new Timeout(2 seconds)
   protected implicit def executor: ExecutionContext = system.dispatcher
   
@@ -152,7 +156,9 @@ class Backend(system: ActorSystem ) extends DrpbxBackendStack with JacksonJsonSu
     val future = dnrActor ? new TransferId(UUID.fromString(params("id")))
     val result = Await.result(future, timeout.duration)
     result match {
-      case Some(transfer) => transfer
+      case Some(transfer) => {
+        transfer
+      }
       case None => Map("result" -> false)
     }
   }
@@ -171,11 +177,12 @@ class Backend(system: ActorSystem ) extends DrpbxBackendStack with JacksonJsonSu
   get("/file/:id/show") {
     implicit val timeout = Timeout(5 seconds)
     val file = new FileReq(UUID.fromString(params("id")))
-    val future = fileActor ? file
+    Map("result" -> true)
+    /*val future = fileActor ? file
     Await.result(future, timeout.duration) match {
       case Some(file) => Map("result" -> true, "file" -> file) 
       case None => Map("result" -> false) 
-    } 
+    } */
   }
 
 }

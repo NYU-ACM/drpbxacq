@@ -85,9 +85,11 @@ object Donor extends Controller with JsonImplicits with FileSummarySupport {
           val result: JsBoolean = (json \ "result").as[JsBoolean]
           result.value match {
             case true => {
+              
               (json \ "transfers").as[List[XferWeb]].foreach{ xfer =>
                 if(xfer.status == 1) pendingXfers = pendingXfers ++ Vector(xfer)
               }
+              
               Ok(views.html.donor.index(pendingXfers))
             }
             case false =>  Redirect(routes.Donor.index)
