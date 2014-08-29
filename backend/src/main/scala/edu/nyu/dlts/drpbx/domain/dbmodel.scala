@@ -23,10 +23,11 @@ class DBModel(name: String, dal: DAL, db: Database) {
   def loginDonor(login: Login): Option[Donor] = dal.validateDonorLogin(login)
   def getDonor(email: String): Option[Donor] = dal.getDonorByEmail(email)
   def getDonorWeb(id: UUID): Option[DonorWeb] = dal.getDonorById(id)
-  def getDonorToken(id: UUID): Option[String] = dal.getTokenById(id)
+  def getDonorToken(req: TokenReq): Option[String] = dal.getTokenById(req)
   def insertTransfer(req: TransferReq): TransferResponse = dal.createTransfer(req)
   def getTransfers(): List[TransferWeb] = dal.getAllTransfers
   def getDonorTransfers(req: DonorTransfersReq): Option[List[TransferWeb]] = dal.getTransfersById(req)
   def getTransferById(req: TransferId): Option[TransferWeb] = dal.getTransfer(req)
   def getFilesByTransId(req: TransferId): List[FileWeb] = dal.getFilesByTransferId(req)
+  def getFileById(req: FileReq): Option[FileWeb] = dal.getFile(req) 
 }

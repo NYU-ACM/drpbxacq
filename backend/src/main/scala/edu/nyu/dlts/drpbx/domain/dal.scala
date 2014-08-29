@@ -62,9 +62,14 @@ class DAL(override val profile: JdbcProfile) extends DrpbxAcq with Profile {
     else Some(new DonorWeb(donor.head.id.toString, donor.head.name, donor.head.org))
   }
 
-  def getTokenById(id: UUID)(implicit s: Session): Option[String] = {
-    val donor = donors.filter(_.id === id).list
+  def getTokenById(req: TokenReq)(implicit s: Session): Option[String] = {
+    val donor = donors.filter(_.id === req.id).list
     if(donor.isEmpty) None else Some(donor.head.token)
+  }
+
+  def getDonorIdByTransferId(req: TransReq)(implicit s: Session): Option[UUID] = {
+    val trans = transfers.filter(_.id === req.id).list
+    if(trans.isEmpty) None else Some(trans.head.donorId)
   }
 
   def createTransfer(req: TransferReq)(implicit s: Session): TransferResponse = {  
@@ -74,7 +79,7 @@ class DAL(override val profile: JdbcProfile) extends DrpbxAcq with Profile {
     transfers.insert(transfer)
     logger.info(transfer.title + " CREATED")
 
-    val token = getTokenById(transfer.donorId).get
+    val token = getTokenById(new TokenReq(transfer.donorId)).get
     val client = new DbxClient(dbConfig, token)
 
     var count = 0;
@@ -129,5 +134,15 @@ class DAL(override val profile: JdbcProfile) extends DrpbxAcq with Profile {
         f = f ++ List(new FileWeb(file.id.toString, file.xferId.toString, file.rev, file.filename, file.path, file.humanSize, file.size, file.modDate.getTime, file.status))
     }
     f
+  }
+
+
+  def getFile(req: FileReq)(implicit s: Session): Option[FileWeb] = {
+    val fileList = files.filter(_.id === req.id).list
+    if(fileList.isEmpty) None
+    else{
+      val file = fileList.head
+      Some(new FileWeb(file.id.toString, file.xferId.toString, file.rev, file.filename, file.path, file.humanSize, file.size, file.modDate.getTime, file.status))   
+    }
   }
 }

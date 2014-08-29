@@ -177,21 +177,35 @@ class Backend(system: ActorSystem ) extends DrpbxBackendStack with JacksonJsonSu
   get("/file/:id/show") {
     implicit val timeout = Timeout(5 seconds)
     val file = new FileReq(UUID.fromString(params("id")))
-    Map("result" -> true)
-    /*val future = fileActor ? file
+    val future = fileActor ? file
     Await.result(future, timeout.duration) match {
       case Some(file) => Map("result" -> true, "file" -> file) 
       case None => Map("result" -> false) 
-    } */
+    }
   }
 
+  get("/file/:id/download") {
+    implicit val timeout = Timeout(5 seconds)
+    val file = new FileDLReq(UUID.fromString(params("id")), UUID.fromString(params("userId")))
+    val future = fileActor ? file
+    Await.result(future, timeout.duration) match {
+      case Some(map) => map
+      case None => Map("result" -> false) 
+    }
+  }
 }
 
 class FileActor extends Actor with DrpbxDbSupport {
   val logger: Logger = LoggerFactory.getLogger("drpbx.fileactor")
   def receive = {
     case req: FileReq => {
-      sender ! Some("test")
+      sender ! m.getFileById(req)
+    }
+
+    case req: FileDLReq => {
+      val file = m.getFileById(new FileReq(req.id))
+      val token = m.getDonorToken(new TokenReq(req.donorId))
+      sender ! Some(Map("result" -> true, "file" -> file, "token" -> token))
     }
   }
 
@@ -259,7 +273,7 @@ class DonorActor extends Actor with DrpbxDbSupport {
 
     case req: TokenReq => {
       logger.info("TOKEN REQUEST RECEIVED")
-      sender ! m.getDonorToken(req.id)
+      sender ! m.getDonorToken(req)
     }
 
     case req: TransferReq => {
