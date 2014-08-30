@@ -210,7 +210,6 @@ class FileActor extends Actor with DrpbxDbSupport {
           val transReq = new TransReq(xferId)
           val donorId = m.getDonorId(transReq).get
           val tokenReq = new TokenReq(donorId)
-          println(tokenReq)
           val token = m.getDonorToken(tokenReq)
           sender ! Some(Map("result" -> true, "file" -> f, "token" -> token.getOrElse(null)))
         }

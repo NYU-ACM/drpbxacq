@@ -30,7 +30,7 @@ object DbxFile extends Controller with JsonImplicits {
               dl.createNewFile
               val fos = new FileOutputStream(dl)
               val client = new DbxClient(dbConfig, (json \ "token").as[JsString].value)
-              val dlFile = client.getFile(file, null, fos);    
+              val dlFile = client.getFile(file, filemd.rev, fos);    
               Ok.sendFile(
     			content = dl,
     			fileName = _ => filemd.filename
