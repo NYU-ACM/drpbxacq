@@ -59,7 +59,7 @@
       <tbody>
 	    @for(file <- files){
 	      <tr>
-	      	<td>@file.filename</td>
+	      	<td><a href="/file/@file.id/show">@file.filename</a></td>
 	        <td>@file.path</td> 
 	        <td>@file.rev</td>
 	      	<td>@file.humanSize</td>

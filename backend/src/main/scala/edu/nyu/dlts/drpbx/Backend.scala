@@ -186,7 +186,7 @@ class Backend(system: ActorSystem ) extends DrpbxBackendStack with JacksonJsonSu
 
   get("/file/:id/download") {
     implicit val timeout = Timeout(5 seconds)
-    val file = new FileDLReq(UUID.fromString(params("id")), UUID.fromString(params("userId")))
+    val file = new FileDLReq(UUID.fromString(params("id")))
     val future = fileActor ? file
     Await.result(future, timeout.duration) match {
       case Some(map) => map
@@ -204,11 +204,20 @@ class FileActor extends Actor with DrpbxDbSupport {
 
     case req: FileDLReq => {
       val file = m.getFileById(new FileReq(req.id))
-      val token = m.getDonorToken(new TokenReq(req.donorId))
-      sender ! Some(Map("result" -> true, "file" -> file, "token" -> token))
+      file match {
+        case Some(f) => {
+          val xferId = UUID.fromString(f.xferId)
+          val transReq = new TransReq(xferId)
+          val donorId = m.getDonorId(transReq).get
+          val tokenReq = new TokenReq(donorId)
+          println(tokenReq)
+          val token = m.getDonorToken(tokenReq)
+          sender ! Some(Map("result" -> true, "file" -> f, "token" -> token.getOrElse(null)))
+        }
+        case None => sender ! Some(Map("result" -> false))
+      }
     }
   }
-
 }
 
 class DbActor extends Actor with DrpbxDbSupport {

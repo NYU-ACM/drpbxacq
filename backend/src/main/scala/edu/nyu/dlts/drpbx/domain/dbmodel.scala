@@ -29,5 +29,6 @@ class DBModel(name: String, dal: DAL, db: Database) {
   def getDonorTransfers(req: DonorTransfersReq): Option[List[TransferWeb]] = dal.getTransfersById(req)
   def getTransferById(req: TransferId): Option[TransferWeb] = dal.getTransfer(req)
   def getFilesByTransId(req: TransferId): List[FileWeb] = dal.getFilesByTransferId(req)
-  def getFileById(req: FileReq): Option[FileWeb] = dal.getFile(req) 
+  def getFileById(req: FileReq): Option[FileWeb] = dal.getFile(req)
+  def getDonorId(req: TransReq): Option[UUID] = dal.getDonorIdByTransferId(req)
 }
