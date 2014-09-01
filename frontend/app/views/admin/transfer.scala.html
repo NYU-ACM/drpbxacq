@@ -71,24 +71,24 @@
   </div>
   
   <br>
-  <div class="lead">Admin Actions</div>
   @if(xfer.status == 1) {
-    <div class="form-dbxentry">
-      <form method="post" action="/admin/approve" class="form-inline">
-        <input type="submit" class="btn btn-primary" value="Approve Accession"> 
+      <div class="lead">Admin Actions</div>
+      <div class="form-dbxentry">
+      <form method="post" action="/transfer/approve" class="form-inline">
+        <input type="submit" class="btn btn-primary" value="Approve Transfer"> 
         <div class="form-group">
           <label class="sr-only">accession #</label>
           <input type="text" name="accessionId" placeholder="accession number"/>
         </div>
         <div class="form-group">
           <label class="sr-only">note</label>
-          <input type="text" name="note" placeholder="note" size="70"/>
+          <input type="text" name="adminNote" placeholder="note" size="70"/>
         </div>
-        <input type="hidden" name="xferId" value="@xfer.id" />
+        <input type="hidden" name="transferId" value="@xfer.id" />
       </form>
       <br>
 
-      <form method="post" action="/admin/cancel" class="form-inline">
+      <form method="post" action="/transfer/cancel" class="form-inline">
         <input type="submit" class="btn btn-danger" value="Cancel Transfer" />
         <div class="form-group">
           <label class="sr-only">reason</label>

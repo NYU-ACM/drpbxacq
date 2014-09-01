@@ -31,4 +31,5 @@ class DBModel(name: String, dal: DAL, db: Database) {
   def getFilesByTransId(req: TransferId): List[FileWeb] = dal.getFilesByTransferId(req)
   def getFileById(req: FileReq): Option[FileWeb] = dal.getFile(req)
   def getDonorId(req: TransReq): Option[UUID] = dal.getDonorIdByTransferId(req)
+  def approveTransferRequest(req: TransferApproveReq): Boolean = dal.approveTransfer(req)
 }

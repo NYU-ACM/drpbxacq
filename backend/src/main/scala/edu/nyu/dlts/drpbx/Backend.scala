@@ -24,14 +24,15 @@ import edu.nyu.dlts.drpbx.backend.serializers._
 class Backend(system: ActorSystem ) extends DrpbxBackendStack with JacksonJsonSupport with FutureSupport with Serializers {
   
   val logger: Logger = LoggerFactory.getLogger("drpbx.rest")
-  
-  implicit val timeout = new Timeout(2 seconds)
+  implicit val timeout = new Timeout(10 seconds)
   protected implicit def executor: ExecutionContext = system.dispatcher
-  
-  val dbActor = system.actorOf(Props[DbActor], name = "db")
+
+  val adminActor = system.actorOf(Props[AdminActor], name = "admin")
   val dnrActor = system.actorOf(Props[DonorActor], name = "donor")
   val fileActor = system.actorOf(Props[FileActor], name = "file")
+  val transferActor = system.actorOf(Props[TransferActor], name="transfer")
 
+  //REST Interface
   before() {
     contentType = formats("json")
   }
@@ -45,17 +46,17 @@ class Backend(system: ActorSystem ) extends DrpbxBackendStack with JacksonJsonSu
   }
 
   get("/admin/create") {
-    dbActor ! Create
+    adminActor ! Create
     Map("admin" -> Map("create" -> true))
   }
 
   get("/admin/drop") {
-    dbActor ! Drop
+    adminActor ! Drop
     Map("admin" -> Map("drop" -> true))
   }
 
   get("/admin/purge") {
-    dbActor ! Purge
+    adminActor ! Purge
     Map("admin" -> Map("purge" -> true))
   }
 
@@ -64,7 +65,7 @@ class Backend(system: ActorSystem ) extends DrpbxBackendStack with JacksonJsonSu
     val md5 = MessageDigest.getInstance("MD5").digest(params("password").getBytes)
     val md5Hex = new String(Hex.encodeHexString(md5))
     val admin = new Admin(uuid, params("email"), md5Hex)
-    dbActor ! admin
+    adminActor ! admin
     admin
   }
 
@@ -73,7 +74,7 @@ class Backend(system: ActorSystem ) extends DrpbxBackendStack with JacksonJsonSu
     val md5 = MessageDigest.getInstance("MD5").digest(params("password").getBytes)
     val md5Hex = new String(Hex.encodeHexString(md5))
     val login = new Login(params("email"), md5Hex)
-    val future = dbActor ? login    
+    val future = adminActor ? login    
     val result = Await.result(future, timeout.duration).asInstanceOf[Option[Admin]]
     
     result match {
@@ -91,7 +92,6 @@ class Backend(system: ActorSystem ) extends DrpbxBackendStack with JacksonJsonSu
   }
 
   get("/donor/login") {
-    implicit val timeout = Timeout(5 seconds) 
     val md5 = MessageDigest.getInstance("MD5").digest(params("password").getBytes)
     val md5Hex = new String(Hex.encodeHexString(md5))
     val login = new Login(params("email"), md5Hex)
@@ -108,7 +108,6 @@ class Backend(system: ActorSystem ) extends DrpbxBackendStack with JacksonJsonSu
   }
 
   get("/donor/:email/validate") {
-    implicit val timeout = Timeout(5 seconds) 
     val email = new EmailReq(params("email"))
     val future = dnrActor ? email
     val result = Await.result(future, timeout.duration).asInstanceOf[Option[Donor]]
@@ -122,7 +121,6 @@ class Backend(system: ActorSystem ) extends DrpbxBackendStack with JacksonJsonSu
   }
 
   get("/donor/:id/token") {
-    implicit val timeout = Timeout(5 seconds)
     val tokenReq = new TokenReq(UUID.fromString(params("id")))
     val future = dnrActor ? tokenReq
     val result = Await.result(future, timeout.duration).asInstanceOf[Option[String]] 
@@ -134,9 +132,8 @@ class Backend(system: ActorSystem ) extends DrpbxBackendStack with JacksonJsonSu
   }
 
   post("/transfer") {
-    implicit val timeout = Timeout(5 seconds)
     val xfer = parsedBody.extract[TransferReq]
-    val future = dnrActor ? xfer
+    val future = transferActor ? xfer
     val result = Await.result(future, timeout.duration).asInstanceOf[TransferResponse] 
     result.result match {
       case true => Map("result" -> true, "count" -> result.count)
@@ -145,15 +142,13 @@ class Backend(system: ActorSystem ) extends DrpbxBackendStack with JacksonJsonSu
   }
 
   get("/transfers") {
-    implicit val timeout = Timeout(10 seconds)  
-    val future = dbActor ? TransferAll
+    val future = transferActor ? TransferAll
     val result = Await.result(future, timeout.duration)
     Map("result" -> true, "transfers" -> result)
   }
 
   get("/transfer/:id") {
-    implicit val timeout = Timeout(5 seconds)
-    val future = dnrActor ? new TransferId(UUID.fromString(params("id")))
+    val future = transferActor ? new TransferId(UUID.fromString(params("id")))
     val result = Await.result(future, timeout.duration)
     result match {
       case Some(transfer) => {
@@ -163,10 +158,22 @@ class Backend(system: ActorSystem ) extends DrpbxBackendStack with JacksonJsonSu
     }
   }
 
+  post("/transfer/approve") {
+    val transfer = parsedBody.extract[TransferApproveReq]
+    val future = transferActor ? transfer
+    val result = Await.result(future, timeout.duration)
+    result match {
+      case Some(transfer) => {
+        transfer
+      }
+      case None => Map("result" -> false)
+    }
+    Map("result" -> true, "transfer" -> transfer)
+  }
+
   get("/donor/:id/transfers") {
-    implicit val timeout = Timeout(10 seconds)
     val transfer = new DonorTransfersReq(UUID.fromString(params("id")))
-    val future = dnrActor ? transfer  
+    val future = transferActor ? transfer  
     val result = Await.result(future, timeout.duration)
     result match {
       case Some(xfers) => Map("result" -> true, "transfers" -> xfers) 
@@ -175,7 +182,6 @@ class Backend(system: ActorSystem ) extends DrpbxBackendStack with JacksonJsonSu
   }
 
   get("/file/:id/show") {
-    implicit val timeout = Timeout(5 seconds)
     val file = new FileReq(UUID.fromString(params("id")))
     val future = fileActor ? file
     Await.result(future, timeout.duration) match {
@@ -185,7 +191,6 @@ class Backend(system: ActorSystem ) extends DrpbxBackendStack with JacksonJsonSu
   }
 
   get("/file/:id/download") {
-    implicit val timeout = Timeout(5 seconds)
     val file = new FileDLReq(UUID.fromString(params("id")))
     val future = fileActor ? file
     Await.result(future, timeout.duration) match {
@@ -219,7 +224,9 @@ class FileActor extends Actor with DrpbxDbSupport {
   }
 }
 
-class DbActor extends Actor with DrpbxDbSupport {
+
+//Actors
+class AdminActor extends Actor with DrpbxDbSupport {
   val logger: Logger = LoggerFactory.getLogger("drpbx.rest")
   def receive = {
   	
@@ -252,16 +259,49 @@ class DbActor extends Actor with DrpbxDbSupport {
       logger.info("ADMIN LOGIN MESSAGE RECEIVED")
       sender ! m.loginAdmin(login)
     }
+  }
+}
 
+class TransferActor extends Actor with DrpbxDbSupport {
+  val logger: Logger = LoggerFactory.getLogger("drpbx.transferActor")
+  def receive = {
+    case req: TransferApproveReq => {
+      logger.info("TRANSFER STATUS UPDATE MESSAGE RECEIVED")
+      m.approveTransferRequest(req) match {
+        case true => sender ! Some(Map("result" -> true))
+        case false => sender ! None
+      }
+    } 
     case TransferAll => {
       logger.info("ALL TRANSFERS MESSAGE RECEIVED")
       sender ! m.getTransfers
+    }
+
+    case req: TransferId => {
+      logger.info("TRANSFER REQUEST RECEIVED")
+      val transfer = m.getTransferById(req)
+      val files = m.getFilesByTransId(req)
+
+      transfer match {
+        case Some(xfer) => sender ! Some(Map("result" -> true, "transfer" -> xfer, "files" -> files, "donor" -> m.getDonorWeb(UUID.fromString(xfer.donorId))))
+        case None => None
+      } 
+    }
+
+    case req: DonorTransfersReq => {
+      logger.info("DONOR TRANSFER REQUEST RECEIVED")
+      sender ! m.getDonorTransfers(req)
+    }
+
+    case req: TransferReq => {
+      logger.info("TRANSFER REQUEST RECEIVED")
+      sender ! m.insertTransfer(req)
     }
   }
 }
 
 class DonorActor extends Actor with DrpbxDbSupport {
-  val logger: Logger = LoggerFactory.getLogger("drpbx.rest")
+  val logger: Logger = LoggerFactory.getLogger("drpbx.DonorActor")
   def receive = {
     case donor: Donor => {
       logger.info("DONOR INSERT MSG RECEIVED")
@@ -283,25 +323,5 @@ class DonorActor extends Actor with DrpbxDbSupport {
       logger.info("TOKEN REQUEST RECEIVED")
       sender ! m.getDonorToken(req)
     }
-
-    case req: TransferReq => {
-      logger.info("TRANSFER REQUEST RECEIVED")
-      sender ! m.insertTransfer(req)
-    }
-
-    case req: DonorTransfersReq => {
-      logger.info("DONOR TRANSFER REQUEST RECEIVED")
-      sender ! m.getDonorTransfers(req)
-    }
-
-    case req: TransferId =>
-      logger.info("TRANSFER REQUEST RECEIVED")
-      val transfer = m.getTransferById(req)
-      val files = m.getFilesByTransId(req)
-
-      transfer match {
-        case Some(xfer) => sender ! Some(Map("result" -> true, "transfer" -> xfer, "files" -> files, "donor" -> m.getDonorWeb(UUID.fromString(xfer.donorId))))
-        case None => None
-      } 
   }
 }

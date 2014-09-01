@@ -21,6 +21,7 @@ object DBProtocol {
   case class EmailReq(email: String)
   case class TokenReq(id: UUID)
   case class TransferReq(donorId: String, title: String, donorNote: String, date: Long, paths: Seq[String])
+  case class TransferApproveReq(transferId: String, accessionId: String, adminNote: String)
   case class TransferId(id: UUID)
   case class TransferResponse(result: Boolean, count: Int)
   case class DonorTransfersReq(id: UUID)

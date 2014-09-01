@@ -28,7 +28,7 @@ object DrpbxBackendBuild extends Build {
         "org.scalatra" %% "scalatra-specs2" % ScalatraVersion % "test",
         "org.scalatra" %% "scalatra-json" % "2.3.0",
         "org.json4s" % "json4s-jackson_2.11" % "3.2.10",
-        "com.typesafe.slick" % "slick_2.11" % "2.1.0-RC3",
+        "com.typesafe.slick" % "slick_2.11" % "2.1.0",
         "commons-codec" % "commons-codec" % "1.9",
         "postgresql" % "postgresql" % "9.1-901.jdbc4",
         "com.dropbox.core" % "dropbox-core-sdk" % "1.7.6",

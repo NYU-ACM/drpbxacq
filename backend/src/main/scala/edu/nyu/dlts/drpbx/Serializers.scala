@@ -4,6 +4,9 @@ import edu.nyu.dlts.drpbx.backend.domain.DBProtocol._
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
 import org.json4s.JsonDSL._
+import _root_.akka.actor.{ Actor, ActorRef, ActorSystem, Props }
+import _root_.akka.pattern.ask
+import _root_.akka.util.Timeout
 
 trait Serializers {
   class XferSerializer extends CustomSerializer[TransferWeb](format => ({

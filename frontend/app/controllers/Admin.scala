@@ -6,6 +6,7 @@ import play.api.mvc._
 import play.api.libs.ws._
 import play.api.Play.current
 import scala.concurrent.Future
+import scala.collection.SortedMap
 import scala.util.{ Success, Failure }
 import models._
 
@@ -38,6 +39,10 @@ object Admin extends Controller with JsonImplicits with FileSummarySupport {
     request.session.get("admin") match {
       case Some(admin) => { 
         var pendingXfers = Vector.empty[XferWeb]
+        var activeXfers = Vector.empty[XferWeb]
+        var completeXfers = Vector.empty[XferWeb]
+        var cancelledXfers = Vector.empty[XferWeb]
+
         WS.url("http://localhost:8080/transfers").get.map { response =>
           val json: JsValue = response.json
           val result: JsBoolean = (json \ "result").as[JsBoolean]
@@ -45,8 +50,9 @@ object Admin extends Controller with JsonImplicits with FileSummarySupport {
             case true => {
               (json \ "transfers").as[List[XferWeb]].foreach{ xfer =>
                 if(xfer.status == 1) pendingXfers = pendingXfers ++ Vector(xfer)
+                else if(xfer.status == 2) activeXfers = activeXfers ++ Vector(xfer)
               }
-              Ok(views.html.admin.index(pendingXfers))
+              Ok(views.html.admin.index(SortedMap(1 -> pendingXfers, 2 -> activeXfers, 3 -> completeXfers, 4 -> cancelledXfers)))
             }
             case false => Ok("ko")
           }

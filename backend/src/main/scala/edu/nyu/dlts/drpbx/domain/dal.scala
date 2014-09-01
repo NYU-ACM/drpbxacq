@@ -18,9 +18,8 @@ class DAL(override val profile: JdbcProfile) extends DrpbxAcq with Profile {
   import profile.simple._
   import edu.nyu.dlts.drpbx.backend.domain.DBProtocol._
   val dbConfig = new DbxRequestConfig("DLTS", Locale.getDefault().toString)
-
   val logger: Logger = LoggerFactory.getLogger("drpbx.domain")
-  logger.info("Model class instantiated")
+
 
   def createDB(implicit s: Session) {
   	create
@@ -136,7 +135,6 @@ class DAL(override val profile: JdbcProfile) extends DrpbxAcq with Profile {
     f
   }
 
-
   def getFile(req: FileReq)(implicit s: Session): Option[FileWeb] = {
     val fileList = files.filter(_.id === req.id).list
     if(fileList.isEmpty) None
@@ -144,5 +142,11 @@ class DAL(override val profile: JdbcProfile) extends DrpbxAcq with Profile {
       val file = fileList.head
       Some(new FileWeb(file.id.toString, file.xferId.toString, file.rev, file.filename, file.path, file.humanSize, file.size, file.modDate.getTime, file.status))   
     }
+  }
+
+  def approveTransfer(req: TransferApproveReq)(implicit s: Session): Boolean = {
+    var q = for { t <- transfers if t.id === UUID.fromString(req.transferId) } yield (t.status, t.accessionId, t.adminNote)
+    q.update(2, Some(req.accessionId), Some(req.accessionId))
+    true
   }
 }

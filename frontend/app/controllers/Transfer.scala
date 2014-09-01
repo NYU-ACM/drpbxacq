@@ -1,14 +1,15 @@
 package controllers
 
 import play.api._
-import play.api.libs.ws._
-import play.api.libs.json._
-import play.api.libs.functional.syntax._
-import play.api.mvc._
 import play.api.data._
+import play.api.data.Forms._
+import play.api.libs.functional.syntax._
+import play.api.libs.json._
+import play.api.libs.ws._
+import play.api.mvc._
 import play.api.Play.current
 
-import scala.concurrent.{ Future, Await }
+import scala.concurrent.Future
 import scala.concurrent.duration._
 
 import java.util.{ Locale, UUID }
@@ -92,6 +93,26 @@ object Transfer extends Controller with JsonImplicits {
           }
         }
       } case None => Future.successful(Redirect(routes.Donor.index).flashing("denied" -> "You do not have a valid session, please login."))
+    }
+  }
+
+  def approve = Action.async { implicit request =>
+    request.session.get("admin") match {
+      case Some(admin) => {
+        val form = request.body.asFormUrlEncoded
+        val id = form.get("transferId").head
+        val jsonRequest = Json.obj("transferId" -> id, "accessionId" -> form.get("accessionId").head, "adminNote" -> form.get("adminNote").head)
+        
+        WS.url(s"http://localhost:8080/transfer/approve").post(jsonRequest).map { response => 
+          val json: JsValue = response.json
+          val result: JsBoolean = (json \ "result").as[JsBoolean]
+          result.value match { 
+            case true => { Redirect(routes.Admin.index).flashing("success" -> s"Transfer $id aprroved") }
+            case false => Ok("ko")
+          }
+        }
+      }
+      case None => Future.successful(Redirect(routes.Admin.index).flashing("denied" -> "You do not have a valid session, please login."))
     }
   }
 
