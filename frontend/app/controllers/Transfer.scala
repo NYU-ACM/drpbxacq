@@ -116,6 +116,23 @@ object Transfer extends Controller with JsonImplicits {
     }
   }
 
+  def cancel = Action.async { implicit request =>
+    request.session.get("admin") match {
+      case Some(admin) => {
+        val form = request.body.asFormUrlEncoded
+        val id = form.get("transferId").head
+        val jsonRequest = Json.obj("transferId" -> id, "adminNote" -> form.get("adminNote").head)
+        WS.url(s"http://localhost:8080/transfer/cancel").post(jsonRequest).map { response =>
+          val json: JsValue = response.json
+          (json \ "result").as[JsBoolean].value match {
+            case true => { Redirect(routes.Admin.index).flashing("success" -> s"Transfer $id cancelled") }
+            case false => Ok("ko")
+          }
+        }
+      }
+    }
+  }
+
   def getEntryMap(path: String, client: DbxClient): Map[String, Vector[Entry]] = {
     import scala.collection.JavaConversions._
     var dirs = Map.empty[String, Vector[Entry]]

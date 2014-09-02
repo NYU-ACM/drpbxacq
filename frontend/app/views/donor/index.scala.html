@@ -1,11 +1,10 @@
-@(pendingXfers: Vector[models.XferWeb])(implicit flash: Flash)
+@(xfers: scala.collection.SortedMap[Int, Vector[models.XferWeb]])(implicit flash: Flash)
 @import java.util.Date
 @import java.text.SimpleDateFormat
 
 @donor("DRPBXACQ"){
   
   @if(flash.data.contains("success")){
-    <br>
     <div class="bg-success">
       <span class="glyphicon glyphicon-ok"></span>
       <div class="lead">@flash.get("success")</div>
@@ -15,31 +14,36 @@
   <a href="/transfer" class="btn btn-primary">create transfer</a>
   <br>
   <br>
-  <div class=form-dbxentry>
-    <div class="lead">Pending Transfers</div>
-    @if(pendingXfers.size > 0) {
-      <table class="table table-striped form-dbxentry">
-        <tr>
-          <th width="10%">date</th>
-          <th>title</th>
-          <th>summary</th>
-          <th>note</th>
-          <th width="10%">
-        @for(xfer <- pendingXfers) {
-          <tr>
-            @defining(new SimpleDateFormat("yyyy-MM-dd").format(new Date(xfer.xferDate))){ date =>
-              <td>@date</td>
+  @for(i <- 1 to 4){
+    @defining(xfers.get(i).get){ transfers =>
+      @if(i == 1){ <div class="lead">pending transfers</div> }
+      @if(i == 2){ <div class="lead">active transfers</div> }
+      @if(i == 3){ <div class="lead">complete transfers</div> }
+      @if(i == 4){ <div class="lead">cancelled transfers</div> }
+      @if(transfers.size > 0) {
+        <div class=form-dbxentry>
+          <table class="table table-striped form-dbxentry">
+            <tr>
+              <th width="10%">date</th>
+              <th width="40%">title</th>
+              <th>summary</th>
+              <th>organization</th>
+              <th width="10%"></th>
+            </tr>
+            @for(xfer <- transfers) {
+              <tr>
+                @defining(new SimpleDateFormat("yyyy-MM-dd").format(new Date(xfer.xferDate))){ date =>
+                  <td>@date</td>
+                }
+                <td>@xfer.title</td>
+                <td />
+                <td />
+                <td><a class="btn btn-primary" href="/donor/transfer/@xfer.id/show">view</a></td>
+              </tr>
             }
-            <td>@xfer.title</td>
-            <td />
-            <td>@xfer.donorNote</td>
-            <td><a class="btn btn-primary" href="/donor/transfer/@xfer.id/show">view</a></td>
-          </tr>
-        }
-      </table>
-    } else{ <div class="lead bg-info">There are no pending transfers</div> }
-    <div class="lead">Active Transfers</div>
-    <div class="lead">Complete Transfers</div>
-    <div class="lead">Cancelled Transfers</div>
-  </div>
+          </table>
+        </div>      
+      } else { no transfers }
+    }
+  }
 }

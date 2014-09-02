@@ -19,9 +19,7 @@ object Admin extends Controller with JsonImplicits with FileSummarySupport {
   def validateLogin = Action.async { implicit request => 	
   	val email = request.body.asFormUrlEncoded.get("email").head	
   	val password = request.body.asFormUrlEncoded.get("password").head
-    val url = s"http://localhost:8080/admin/login?email=$email&password=$password"
-    
-    WS.url(url).get().map { response => 
+    WS.url(s"http://localhost:8080/admin/login?email=$email&password=$password").get().map { response => 
       val json: JsValue = response.json
       val result: JsBoolean = (json \ "result").as[JsBoolean]
       result.value match {
@@ -51,6 +49,8 @@ object Admin extends Controller with JsonImplicits with FileSummarySupport {
               (json \ "transfers").as[List[XferWeb]].foreach{ xfer =>
                 if(xfer.status == 1) pendingXfers = pendingXfers ++ Vector(xfer)
                 else if(xfer.status == 2) activeXfers = activeXfers ++ Vector(xfer)
+                else if(xfer.status == 3) completeXfers = completeXfers ++ Vector(xfer)
+                else if(xfer.status == 4) cancelledXfers = cancelledXfers ++ Vector(xfer)
               }
               Ok(views.html.admin.index(SortedMap(1 -> pendingXfers, 2 -> activeXfers, 3 -> completeXfers, 4 -> cancelledXfers)))
             }

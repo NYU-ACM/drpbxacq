@@ -9,7 +9,7 @@ import play.api.libs.json._
 import play.api.libs.ws._
 import play.api.mvc._
 import play.api.Play.current
-
+import scala.collection.SortedMap
 import scala.concurrent.Future
 import com.dropbox.core.{ DbxAppInfo, DbxRequestConfig, DbxWebAuthNoRedirect }
 import java.util.{ UUID, Locale }
@@ -78,20 +78,24 @@ object Donor extends Controller with JsonImplicits with FileSummarySupport {
   }
 
   def index = Action.async { implicit request =>
+
     request.session.get("id") match {
       case Some(id) => {
         var pendingXfers = Vector.empty[XferWeb]
+        var activeXfers = Vector.empty[XferWeb]
+        var completeXfers = Vector.empty[XferWeb]
+        var cancelledXfers = Vector.empty[XferWeb]
+        
         WS.url(s"http://localhost:8080/donor/$id/transfers").get.map { response =>
           val json: JsValue = response.json
           val result: JsBoolean = (json \ "result").as[JsBoolean]
           result.value match {
             case true => {
-              
               (json \ "transfers").as[List[XferWeb]].foreach{ xfer =>
                 if(xfer.status == 1) pendingXfers = pendingXfers ++ Vector(xfer)
+                else if(xfer.status == 2) activeXfers = activeXfers ++ Vector(xfer)
               }
-              
-              Ok(views.html.donor.index(pendingXfers))
+              Ok(views.html.donor.index(SortedMap(1 -> pendingXfers, 2 -> activeXfers, 3 -> completeXfers, 4 -> cancelledXfers)))
             }
             case false =>  Redirect(routes.Donor.index)
           }

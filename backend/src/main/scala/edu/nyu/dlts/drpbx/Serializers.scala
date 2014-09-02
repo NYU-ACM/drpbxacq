@@ -19,7 +19,8 @@ trait Serializers {
       val accessionId = (jv \ "accessionId").extract[Option[String]]
       val adminNote = (jv \ "adminNote").extract[Option[String]]
       val donorNote = (jv \ "donorNote").extract[Option[String]]
-      TransferWeb(id, donorId, title, xferDate, status, accessionId, adminNote, donorNote)
+      val cancelNote = (jv \ "cancelNote").extract[Option[String]]
+      TransferWeb(id, donorId, title, xferDate, status, accessionId, adminNote, donorNote, cancelNote)
   }, { case xfer: TransferWeb => 
       ("id" -> xfer.id) ~ 
       ("donorId" -> xfer.donorId) ~
@@ -28,7 +29,8 @@ trait Serializers {
       ("status" -> xfer.status) ~    
       ("accessionId" -> xfer.accessionId.getOrElse(null)) ~ 
       ("adminNote" -> xfer.adminNote.getOrElse(null)) ~ 
-      ("donorNote" -> xfer.donorNote.getOrElse(null)) 
+      ("donorNote" -> xfer.donorNote.getOrElse(null)) ~
+      ("cancelNote" -> xfer.cancelNote.getOrElse(null))
 	 }))
 
   protected implicit val jsonFormats: Formats = DefaultFormats + new XferSerializer

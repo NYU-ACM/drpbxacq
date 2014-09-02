@@ -8,7 +8,9 @@ import scala.slick.driver.PostgresDriver.simple._
 import scala.slick.driver.JdbcProfile
 import java.util.{ Locale, UUID }
 import com.dropbox.core.{ DbxRequestConfig, DbxClient }
-
+import org.apache.commons.codec.binary.Hex
+import java.security.MessageDigest
+import com.typesafe.config._
 
 trait Profile {
   val profile: JdbcProfile
@@ -17,6 +19,8 @@ trait Profile {
 class DAL(override val profile: JdbcProfile) extends DrpbxAcq with Profile {
   import profile.simple._
   import edu.nyu.dlts.drpbx.backend.domain.DBProtocol._
+  val conf = ConfigFactory.load()
+
   val dbConfig = new DbxRequestConfig("DLTS", Locale.getDefault().toString)
   val logger: Logger = LoggerFactory.getLogger("drpbx.domain")
 
@@ -74,7 +78,7 @@ class DAL(override val profile: JdbcProfile) extends DrpbxAcq with Profile {
   def createTransfer(req: TransferReq)(implicit s: Session): TransferResponse = {  
     val xferId = UUID.randomUUID
     val date = new java.sql.Date(req.date)
-    val transfer = new Transfer(xferId, UUID.fromString(req.donorId), req.title,  date, 1, None, None, Some(req.donorNote))
+    val transfer = new Transfer(xferId, UUID.fromString(req.donorId), req.title,  date, 1, None, None, Some(req.donorNote), None)
     transfers.insert(transfer)
     logger.info(transfer.title + " CREATED")
 
@@ -86,7 +90,7 @@ class DAL(override val profile: JdbcProfile) extends DrpbxAcq with Profile {
     req.paths.foreach{ path => 
       val md = client.getMetadata(path).asFile
       val path2 = path.substring(0, path.length - md.name.length)
-      val file = new File(UUID.randomUUID, xferId, md.rev, md.name, path2, md.humanSize, md.numBytes, new java.sql.Date(md.lastModified.getTime), "Queued")
+      val file = new File(UUID.randomUUID, xferId, md.rev, md.name, path2, md.humanSize, md.numBytes, new java.sql.Date(md.lastModified.getTime), 1)
       files.insert(file)
       count = count + 1
       logger.info(file.filename + " ADDED")
@@ -97,7 +101,7 @@ class DAL(override val profile: JdbcProfile) extends DrpbxAcq with Profile {
   def getAllTransfers()(implicit s: Session): List[TransferWeb] = {
     var xfers = List.empty[TransferWeb]
     for(transfer <- transfers){
-      val xfer = new TransferWeb(transfer.id.toString, transfer.donorId.toString, transfer.title, transfer.xferDate.getTime, transfer.status, transfer.accessionId, transfer.adminNote, transfer.donorNote)
+      val xfer = new TransferWeb(transfer.id.toString, transfer.donorId.toString, transfer.title, transfer.xferDate.getTime, transfer.status, transfer.accessionId, transfer.adminNote, transfer.donorNote, transfer.cancelNote)
       xfers = xfers ++ List(xfer)
     }
     xfers
@@ -106,14 +110,13 @@ class DAL(override val profile: JdbcProfile) extends DrpbxAcq with Profile {
   def getTransfersById(req: DonorTransfersReq)(implicit s: Session): Option[List[TransferWeb]] = {
     var xfers = List.empty[TransferWeb]
     val trans = transfers.filter(_.donorId === req.id).list
-    if(trans.isEmpty) None 
-    else {
+    if(! trans.isEmpty) {
       for(transfer <- trans){
-        val xfer = new TransferWeb(transfer.id.toString, transfer.donorId.toString, transfer.title, transfer.xferDate.getTime, transfer.status, transfer.accessionId, transfer.adminNote, transfer.donorNote)
+        val xfer = new TransferWeb(transfer.id.toString, transfer.donorId.toString, transfer.title, transfer.xferDate.getTime, transfer.status, transfer.accessionId, transfer.adminNote, transfer.donorNote, transfer.cancelNote)
         xfers = xfers ++ List(xfer)
       }
-      Some(xfers)
     }
+    Some(xfers)
   }
 
   def getTransfer(req: TransferId)(implicit s: Session): Option[TransferWeb] = {
@@ -121,7 +124,7 @@ class DAL(override val profile: JdbcProfile) extends DrpbxAcq with Profile {
     if(trans.isEmpty) None
     else{
       val transfer = trans.head 
-      Some(new TransferWeb(transfer.id.toString, transfer.donorId.toString, transfer.title, transfer.xferDate.getTime, transfer.status, transfer.accessionId, transfer.adminNote, transfer.donorNote))
+      Some(new TransferWeb(transfer.id.toString, transfer.donorId.toString, transfer.title, transfer.xferDate.getTime, transfer.status, transfer.accessionId, transfer.adminNote, transfer.donorNote, transfer.cancelNote))
     }
   }
 
@@ -145,8 +148,27 @@ class DAL(override val profile: JdbcProfile) extends DrpbxAcq with Profile {
   }
 
   def approveTransfer(req: TransferApproveReq)(implicit s: Session): Boolean = {
-    var q = for { t <- transfers if t.id === UUID.fromString(req.transferId) } yield (t.status, t.accessionId, t.adminNote)
-    q.update(2, Some(req.accessionId), Some(req.accessionId))
+    val transferId = UUID.fromString(req.transferId)
+
+    val q = for { t <- transfers if t.id === transferId } yield (t.status, t.accessionId, t.adminNote)
+    q.update(2, Some(req.accessionId), Some(req.adminNote))
+
+
+    val q2 = for { f <- files if f.xferId === transferId } yield (f.status)
+    q2.update(2)
+
+    true
+  }
+
+  def cancelTransfer(req: TransferCancelReq)(implicit s: Session): Boolean = {
+    val transferId = UUID.fromString(req.transferId)
+    
+    val q = for { t <- transfers if t.id === transferId } yield (t.status, t.cancelNote)
+    q.update(4, Some(req.adminNote))
+
+    val q2 = for { f <- files if f.xferId === transferId } yield (f.status)
+    q2.update(4)
+
     true
   }
 }

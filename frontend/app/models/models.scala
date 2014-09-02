@@ -8,8 +8,8 @@ import java.util.UUID
 case class DonorModel(id: String, email: String, name: String, org: String, passMd5: String, token:String)
 case class Entry(filename: String, path: String, revision: String, humanSize: String, size: Long, mDate: java.util.Date)
 case class Xfer(id: UUID, userId: UUID, title: String, xferDate: java.sql.Date, status: Int, accessionId: String, adminNote: String, donorNote: String)
-case class XferWeb(id: String, donorId: String, title: String, xferDate: Long, status: Int, accessionId: Option[String], adminNote: Option[String], donorNote: Option[String])
-case class FileWeb(id: String, xferId: String, rev: String, filename: String, path: String, humanSize: String,size: Long, modDate: Long, status: String)
+case class XferWeb(id: String, donorId: String, title: String, xferDate: Long, status: Int, accessionId: Option[String], adminNote: Option[String], donorNote: Option[String], cancelNote: Option[String])
+case class FileWeb(id: String, xferId: String, rev: String, filename: String, path: String, humanSize: String,size: Long, modDate: Long, status: Int)
 case class DonorWeb(id: String, name: String, org: String)
 
 
@@ -29,7 +29,8 @@ trait JsonImplicits {
   	(JsPath \ "status").read[Int] and
   	(JsPath \ "accessionId").read[Option[String]] and
   	(JsPath \ "adminNote").read[Option[String]] and
-  	(JsPath \ "donorNote").read[Option[String]]
+  	(JsPath \ "donorNote").read[Option[String]] and
+    (JsPath \ "cancelNote").read[Option[String]]
   )(XferWeb.apply _)
 
   implicit val fileReads: Reads[FileWeb] = (
@@ -41,7 +42,7 @@ trait JsonImplicits {
     (JsPath \ "humanSize").read[String] and
     (JsPath \ "size").read[Long] and
     (JsPath \ "modDate").read[Long] and
-    (JsPath \ "status").read[String]
+    (JsPath \ "status").read[Int]
   )(FileWeb.apply _)
 }
 

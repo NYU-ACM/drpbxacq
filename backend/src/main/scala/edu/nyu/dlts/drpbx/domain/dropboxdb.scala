@@ -6,6 +6,7 @@ import java.util.{ UUID }
 import org.apache.commons.codec.binary.Hex
 import java.security.MessageDigest
 import edu.nyu.dlts.drpbx.backend.domain.DBProtocol._
+import com.typesafe.config._
 
 
 trait DrpbxAcq {
@@ -17,7 +18,11 @@ trait DrpbxAcq {
   val transfers = TableQuery[Transfers]
 
   def create(implicit session: Session): Unit = {
+    val conf = ConfigFactory.load()
     (donors.ddl ++ transfers.ddl ++ files.ddl ++ admins.ddl).create
+    val md5 = MessageDigest.getInstance("MD5").digest(conf.getString("admin.password").getBytes)
+    val md5Hex = new String(Hex.encodeHexString(md5))
+    admins.insert(new Admin(UUID.randomUUID, conf.getString("admin.email"), md5Hex))
   }
 
   def drop(implicit session: Session): Unit = {
@@ -44,7 +49,8 @@ trait DrpbxAcq {
     def accessionId = column[Option[String]]("ACCESSION_ID", O.Nullable)
     def adminNote = column[Option[String]]("ADMIN_NOTE", O.Nullable)
     def donorNote = column[Option[String]]("DONOR_NOTE", O.Nullable)
-    def * = (id, donorId, title, xferDate, status, accessionId, adminNote, donorNote) <> (Transfer.tupled, Transfer.unapply _)
+    def cancelNote = column[Option[String]]("CANCEL_NOTE", O.Nullable)
+    def * = (id, donorId, title, xferDate, status, accessionId, adminNote, donorNote, cancelNote) <> (Transfer.tupled, Transfer.unapply _)
     def donor = foreignKey("DNR_FK", donorId, donors)(_.id)
   }
 
@@ -58,7 +64,7 @@ trait DrpbxAcq {
     def humanSize = column[String]("HUMAN_SIZE", O.NotNull)
     def size = column[Long]("SIZE", O.NotNull)
     def modDate = column[java.sql.Date]("MOD_DATE", O.NotNull)
-    def status = column[String]("STATUS", O.NotNull)
+    def status = column[Int]("STATUS", O.NotNull)
     def * = (id, xferId, rev, filename, path, humanSize, size, modDate, status) <> (File.tupled, File.unapply _)
     def xfer = foreignKey("XFR_FK", xferId, transfers)(_.id)
   }

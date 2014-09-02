@@ -4,3 +4,8 @@ prodDb {
   user=[db user]
   password=[db pass]
 }
+
+admin {
+  email="[admin email]"
+  password=[admin password]
+}
