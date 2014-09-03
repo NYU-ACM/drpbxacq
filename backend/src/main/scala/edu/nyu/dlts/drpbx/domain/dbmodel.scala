@@ -33,5 +33,6 @@ class DBModel(name: String, dal: DAL, db: Database) {
   def getDonorId(req: TransReq): Option[UUID] = dal.getDonorIdByTransferId(req)
   def approveTransferRequest(req: TransferApproveReq): Boolean = dal.approveTransfer(req)
   def cancelTransferRequest(req: TransferCancelReq): Boolean = dal.cancelTransfer(req)
+  def downloadTransfer(req: TransferId): Boolean = dal.downloadXfer(req)
 
 }

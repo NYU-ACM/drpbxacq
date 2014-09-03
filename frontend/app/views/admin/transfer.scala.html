@@ -73,7 +73,7 @@
   <br>
   
   <div class="lead">Admin Actions</div>
-  @if(xfer.status == 1 || xfer.status == 2) {
+  @if(xfer.status == 1) {
     <div class="form-dbxentry">
       <h4>approve transfer</h4>
       <form method="post" action="/transfer/approve" class="form-inline">
@@ -89,6 +89,9 @@
         <input type="hidden" name="transferId" value="@xfer.id" />
       </form>
     </div>
+    }
+
+  @if(xfer.status == 1 || xfer.status == 2) {
     <br>
     <div class="form-dbxentry">
       <h4>cancel transfer</h4>

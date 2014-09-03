@@ -22,7 +22,7 @@ class DAL(override val profile: JdbcProfile) extends DrpbxAcq with Profile {
   val conf = ConfigFactory.load()
 
   val dbConfig = new DbxRequestConfig("DLTS", Locale.getDefault().toString)
-  val logger: Logger = LoggerFactory.getLogger("drpbx.domain")
+  val logger: Logger = LoggerFactory.getLogger("drpbx.dal")
 
 
   def createDB(implicit s: Session) {
@@ -169,6 +169,30 @@ class DAL(override val profile: JdbcProfile) extends DrpbxAcq with Profile {
     val q2 = for { f <- files if f.xferId === transferId } yield (f.status)
     q2.update(4)
 
+    true
+  }
+
+  def downloadXfer(req: TransferId)(implicit s: Session): Boolean = {
+
+    val did = getDonorIdByTransferId(new TransReq(req.id)).get
+    val token = getTokenById(new TokenReq(did)).get
+    val client = new DbxClient(dbConfig, token)
+    getFilesByTransferId(req).foreach{ i => downloadDbxFile(new FileDownloadReq(UUID.fromString(i.id), client)) }
+    
+    true
+  }
+
+  def downloadDbxFile(req: FileDownloadReq)(implicit s: Session): Boolean = {
+    
+    val file = files.filter(_.id === req.fileId).list.head
+    val root = new java.io.File("/tmp", file.xferId.toString).getAbsolutePath
+    val dir = new java.io.File(root, file.path)
+    dir.mkdirs()
+    val path = new java.io.File(dir.getAbsolutePath, file.filename)
+    path.createNewFile
+    val fos = new java.io.FileOutputStream(path)
+    val dbxPath = new java.io.File(file.path, file.filename).getAbsolutePath
+    val result = req.client.getFile(dbxPath, file.rev, fos)
     true
   }
 }

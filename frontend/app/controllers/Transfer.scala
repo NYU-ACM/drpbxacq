@@ -129,7 +129,7 @@ object Transfer extends Controller with JsonImplicits {
             case false => Ok("ko")
           }
         }
-      }
+      } case None => Future.successful(Redirect(routes.Admin.index).flashing("denied" -> "You do not have a valid session, please login."))
     }
   }
 

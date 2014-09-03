@@ -236,7 +236,6 @@ class FileActor extends Actor with DrpbxDbSupport {
   }
 }
 
-
 //Actors
 class AdminActor extends Actor with DrpbxDbSupport {
   val logger: Logger = LoggerFactory.getLogger("drpbx.adminActor")
@@ -284,7 +283,8 @@ class TransferActor extends Actor with DrpbxDbSupport {
         case true => sender ! Some(Map("result" -> true))
         case false => sender ! None
       }
-      logger.info("DOWNLOADING FILES")
+
+      m.downloadTransfer(new TransferId(UUID.fromString(req.transferId)))
     } 
 
     case req: TransferCancelReq => {
