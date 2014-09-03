@@ -193,6 +193,7 @@ class DAL(override val profile: JdbcProfile) extends DrpbxAcq with Profile {
     val fos = new java.io.FileOutputStream(path)
     val dbxPath = new java.io.File(file.path, file.filename).getAbsolutePath
     val result = req.client.getFile(dbxPath, file.rev, fos)
+    logger.info(result.toString)
     true
   }
 }

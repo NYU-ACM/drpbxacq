@@ -24,7 +24,7 @@ import edu.nyu.dlts.drpbx.backend.serializers._
 class Backend(system: ActorSystem ) extends DrpbxBackendStack with JacksonJsonSupport with FutureSupport with Serializers {
   
   val logger: Logger = LoggerFactory.getLogger("drpbx.rest")
-  implicit val timeout = new Timeout(10 seconds)
+  implicit val timeout = new Timeout(5 seconds)
   protected implicit def executor: ExecutionContext = system.dispatcher
 
   val adminActor = system.actorOf(Props[AdminActor], name = "admin")
@@ -161,14 +161,7 @@ class Backend(system: ActorSystem ) extends DrpbxBackendStack with JacksonJsonSu
   post("/transfer/approve") {
     val transfer = parsedBody.extract[TransferApproveReq]
     val future = transferActor ? transfer
-    val result = Await.result(future, timeout.duration)
-    result match {
-      case Some(transfer) => {
-        transfer
-      }
-      case None => Map("result" -> false)
-    }
-    Map("result" -> true, "transfer" -> transfer)
+    Await.result(future, timeout.duration)
   }
 
   post("/transfer/cancel"){
@@ -273,6 +266,16 @@ class AdminActor extends Actor with DrpbxDbSupport {
   }
 }
 
+class DownloadActor extends Actor with DrpbxDbSupport {
+  val logger: Logger = LoggerFactory.getLogger("drpbx.dlActor")
+  def receive = {
+    case req: TransferId => {
+      logger.info("DOWNLOADING FILES")
+      m.downloadTransfer(req)
+    }
+  }
+}
+
 class TransferActor extends Actor with DrpbxDbSupport {
   val logger: Logger = LoggerFactory.getLogger("drpbx.transferActor")
   
@@ -280,12 +283,17 @@ class TransferActor extends Actor with DrpbxDbSupport {
     case req: TransferApproveReq => {
       logger.info("TRANSFER APPROVE MESSAGE RECEIVED")
       m.approveTransferRequest(req) match {
-        case true => sender ! Some(Map("result" -> true))
-        case false => sender ! None
+        case true => {
+          logger.info("SENDING TRUE RESULT")
+          sender ! Map("result" -> true)
+          
+        }
+        case false => sender ! Map("result" -> false)
       }
 
-      m.downloadTransfer(new TransferId(UUID.fromString(req.transferId)))
-    } 
+      val dlActor = context.actorOf(Props[DownloadActor], "downloadactor")
+      dlActor ! new TransferId(UUID.fromString(req.transferId))
+    }
 
     case req: TransferCancelReq => {
       logger.info("TRANSFER CANCEL MESSAGE RECEIVED")
@@ -293,7 +301,7 @@ class TransferActor extends Actor with DrpbxDbSupport {
         case true => sender ! Some(Map("result" -> true))
         case false => sender ! None
       }
-    } 
+    }
 
     case TransferAll => {
       logger.info("ALL TRANSFERS MESSAGE RECEIVED")

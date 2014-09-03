@@ -33,6 +33,7 @@ object DrpbxBackendBuild extends Build {
         "postgresql" % "postgresql" % "9.1-901.jdbc4",
         "com.dropbox.core" % "dropbox-core-sdk" % "1.7.6",
         "com.typesafe.akka" %% "akka-actor" % "2.3.4",
+        //"org.slf4j" % "slf4j-nop" % "1.7.7",
         "net.databinder.dispatch" %% "dispatch-core" % "0.11.1",
         "ch.qos.logback" % "logback-classic" % "1.0.6" % "runtime",
         "org.eclipse.jetty" % "jetty-webapp" % "9.1.3.v20140225" % "container",
