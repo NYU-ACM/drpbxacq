@@ -8,3 +8,4 @@ backend/project/project
 backend/project/target
 backend/target
 backend/src/main/resources/application.conf
+backend/.lib
