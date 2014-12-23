@@ -9,7 +9,7 @@ object DrpbxBackendBuild extends Build {
   val Organization = "edu.nyu"
   val Name = "drpbx backend"
   val Version = "0.1.0-SNAPSHOT"
-  val ScalaVersion = "2.11.1"
+  val ScalaVersion = "2.11.4"
   val ScalatraVersion = "2.3.0"
 
   lazy val project = Project (

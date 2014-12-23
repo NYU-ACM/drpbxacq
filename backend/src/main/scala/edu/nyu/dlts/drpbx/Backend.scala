@@ -304,18 +304,24 @@ class TransferActor extends Actor with DrpbxDbSupport {
     }
 
     case TransferAll => {
-      logger.info("ALL TRANSFERS MESSAGE RECEIVED")
+      logger.info("ALL TRANSFERS REQUEST RECEIVED")
       sender ! m.getTransfers
     }
 
     case req: TransferId => {
-      logger.info("TRANSFER REQUEST RECEIVED")
+      logger.info("TRANSFER INFO REQUEST RECEIVED\t" + req.id)
       val transfer = m.getTransferById(req)
-      val files = m.getFilesByTransId(req)
 
       transfer match {
-        case Some(xfer) => sender ! Some(Map("result" -> true, "transfer" -> xfer, "files" -> files, "donor" -> m.getDonorWeb(UUID.fromString(xfer.donorId))))
-        case None => None
+        case Some(xfer) => {
+          val files = m.getFilesByTransId(req)
+          logger.info("TRANSFER INFO REQUEST SERVED\t" + req.id)
+          sender ! Some(Map("result" -> true, "transfer" -> xfer, "files" -> files, "donor" -> m.getDonorWeb(UUID.fromString(xfer.donorId))))
+        }
+        case None => {
+          logger.error("TRANSFER NOT FOUND\t" + req.id)
+          sender ! None
+        }
       } 
     }
 
