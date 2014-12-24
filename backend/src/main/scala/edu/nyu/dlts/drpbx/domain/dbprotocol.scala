@@ -24,6 +24,7 @@ object DBProtocol {
   case class TransferApproveReq(transferId: String, accessionId: String, adminNote: String)
   case class TransferCancelReq(transferId: String, adminNote: String)
   case class TransferId(id: UUID)
+  case class TransferStatusUpdate(id:UUID, status: Int)
   case class TransferResponse(result: Boolean, count: Int)
   case class DonorTransfersReq(id: UUID)
   case class FileReq(id: UUID)

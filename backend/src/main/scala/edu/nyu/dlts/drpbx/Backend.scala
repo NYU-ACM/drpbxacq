@@ -291,8 +291,10 @@ class TransferActor extends Actor with DrpbxDbSupport {
         case false => sender ! Map("result" -> false)
       }
 
+      /*
       val dlActor = context.actorOf(Props[DownloadActor], "downloadactor")
       dlActor ! new TransferId(UUID.fromString(req.transferId))
+      */
     }
 
     case req: TransferCancelReq => {
