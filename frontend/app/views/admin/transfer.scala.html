@@ -105,4 +105,14 @@
       </form>
     </div>   
   }
+
+    @if(xfer.status == 1 || xfer.status == 2) {
+    <br>
+    <div class="form-dbxentry">
+      <h4>download transfer</h4>
+      <form method="post" action="/transfer/@xfer.id/download" class="form-inline">
+        <input type="submit" class="btn btn-primary" value="Download Transfer" />
+      </form>
+    </div>   
+  }
 }

@@ -133,6 +133,14 @@ object Transfer extends Controller with JsonImplicits {
     }
   }
 
+  def download(transferId: String) = Action.async { implicit request =>
+    request.session.get("admin") match {
+      case Some(admin) => {
+        Future.successful(Redirect(routes.Admin.index).flashing("success" -> s"Transfer $transferId download started."))
+      } case None => Future.successful(Redirect(routes.Admin.index).flashing("denied" -> "You do not have a valid session, please login."))
+    }
+  }
+
   def getEntryMap(path: String, client: DbxClient): Map[String, Vector[Entry]] = {
     import scala.collection.JavaConversions._
     var dirs = Map.empty[String, Vector[Entry]]

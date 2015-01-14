@@ -33,6 +33,8 @@ POST	/transfer/approve				controllers.Transfer.approve
 
 POST	/transfer/cancel				controllers.Transfer.cancel
 
+POST 	/transfer/:transferId/download			controllers.Transfer.download(transferId: String)
+
 GET		/donor/transfer/:transferId/show		controllers.Donor.transfer(transferId: String)
 
 GET		/admin/transfer/:transferId/show		controllers.Admin.transfer(transferId: String)
