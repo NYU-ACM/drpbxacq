@@ -136,8 +136,16 @@ object Transfer extends Controller with JsonImplicits {
   def download(transferId: String) = Action.async { implicit request =>
     request.session.get("admin") match {
       case Some(admin) => {
-        Future.successful(Redirect(routes.Admin.index).flashing("success" -> s"Transfer $transferId download started."))
-      } case None => Future.successful(Redirect(routes.Admin.index).flashing("denied" -> "You do not have a valid session, please login."))
+        WS.url(s"http://localhost:8080/transfer/$transferId/download").get.map { response =>
+          val json: JsValue = response.json
+          val result: JsBoolean = (json \ "result").as[JsBoolean]
+          result.value match {
+            case true => { Redirect(routes.Admin.index).flashing("success" -> s"Transfer $transferId download started.") } 
+            case false => { Redirect(routes.Admin.index).flashing("failure" -> s"Transfer $transferId download not started.") }
+          }
+        }
+      } 
+      case None => Future.successful(Redirect(routes.Admin.index).flashing("denied" -> "You do not have a valid session, please login."))
     }
   }
 

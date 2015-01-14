@@ -34,5 +34,6 @@ class DBModel(name: String, dal: DAL, db: Database) {
   def approveTransferRequest(req: TransferApproveReq): Boolean = dal.approveTransfer(req)
   def cancelTransferRequest(req: TransferCancelReq): Boolean = dal.cancelTransfer(req)
   def downloadTransfer(req: TransferId): Boolean = dal.downloadXfer(req)
+  def updateTransferStatus(req: TransferStatusUpdate): Boolean = dal.updateXferStatus(req)
 
 }

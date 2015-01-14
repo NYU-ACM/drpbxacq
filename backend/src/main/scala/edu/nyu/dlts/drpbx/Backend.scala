@@ -31,6 +31,7 @@ class Backend(system: ActorSystem ) extends DrpbxBackendStack with JacksonJsonSu
   val dnrActor = system.actorOf(Props[DonorActor], name = "donor")
   val fileActor = system.actorOf(Props[FileActor], name = "file")
   val transferActor = system.actorOf(Props[TransferActor], name="transfer")
+  val dlActor = system.actorOf(Props[DownloadActor], "downloadactor")
 
   //REST Interface
   before() {
@@ -155,6 +156,17 @@ class Backend(system: ActorSystem ) extends DrpbxBackendStack with JacksonJsonSu
         transfer
       }
       case None => Map("result" -> false)
+    }
+  }
+
+  get("/transfer/:id/download") {
+    val pid = params("id")
+    logger.info(s"transfer request $pid")
+    val future = transferActor ? new TransferStatusUpdate(UUID.fromString(params("id")), 3)
+    val result = Await.result(future, timeout.duration)
+    result match {
+      case true => { Map("result" -> true) }
+      case false => { Map("result" -> false) }
     }
   }
 
@@ -335,6 +347,11 @@ class TransferActor extends Actor with DrpbxDbSupport {
     case req: TransferReq => {
       logger.info("TRANSFER REQUEST RECEIVED")
       sender ! m.insertTransfer(req)
+    }
+
+    case req: TransferStatusUpdate => {
+      logger.info("TRANSFER STATUS UPDATE RECEIVED")
+      sender ! m.updateTransferStatus(req)
     }
   }
 }

@@ -160,9 +160,10 @@ class DAL(override val profile: JdbcProfile) extends DrpbxAcq with Profile {
     true
   }
 
-  def updateTransferStatus(req: TransferStatusUpdate)(implicit s: Session): Unit = {
+  def updateXferStatus(req: TransferStatusUpdate)(implicit s: Session): Boolean = {
     val q = for { t <- transfers if t.id === req.id } yield (t.status)
     q.update(req.status)
+    true
   }
 
   def cancelTransfer(req: TransferCancelReq)(implicit s: Session): Boolean = {

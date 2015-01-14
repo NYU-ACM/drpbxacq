@@ -1,0 +1,5 @@
+transfer status codes
+1. transfer requested
+2. transfer approve
+3. transfer downloading
+4. transfer complete

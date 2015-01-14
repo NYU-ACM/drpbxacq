@@ -14,9 +14,10 @@
   @for(i <- 1 to 4){
     @defining(xfers.get(i).get){ transfers =>
       @if(i == 1){ <div class="lead">pending transfers</div> }
-      @if(i == 2){ <div class="lead">active transfers</div> }
-      @if(i == 3){ <div class="lead">complete transfers</div> }
-      @if(i == 4){ <div class="lead">cancelled transfers</div> }
+      @if(i == 2){ <div class="lead">approved transfers</div> }
+      @if(i == 3){ <div class="lead">active transfers</div> }
+      @if(i == 4){ <div class="lead">complete transfers</div> }
+      @if(i == 5){ <div class="lead">cancelled transfers</div> }
       @if(transfers.size > 0) {
         <div class=form-dbxentry>
           <table class="table table-striped form-dbxentry">
@@ -25,6 +26,7 @@
               <th width="40%">title</th>
               <th>summary</th>
               <th>organization</th>
+              <th>status</th>
               <th width="10%"></th>
             </tr>
             @for(xfer <- transfers) {
@@ -33,8 +35,9 @@
                   <td>@date</td>
                 }
                 <td>@xfer.title</td>
-                <td />
-                <td />
+                <td>summary</td>
+                <td />org</td>
+                <td>@i</td>
                 <td><a class="btn btn-primary" href="/admin/transfer/@xfer.id/show">view</a></td>
               </tr>
             }

@@ -37,6 +37,7 @@ object Admin extends Controller with JsonImplicits with FileSummarySupport {
     request.session.get("admin") match {
       case Some(admin) => { 
         var pendingXfers = Vector.empty[XferWeb]
+        var approvedXfers = Vector.empty[XferWeb]
         var activeXfers = Vector.empty[XferWeb]
         var completeXfers = Vector.empty[XferWeb]
         var cancelledXfers = Vector.empty[XferWeb]
@@ -48,11 +49,12 @@ object Admin extends Controller with JsonImplicits with FileSummarySupport {
             case true => {
               (json \ "transfers").as[List[XferWeb]].foreach{ xfer =>
                 if(xfer.status == 1) pendingXfers = pendingXfers ++ Vector(xfer)
-                else if(xfer.status == 2) activeXfers = activeXfers ++ Vector(xfer)
-                else if(xfer.status == 3) completeXfers = completeXfers ++ Vector(xfer)
-                else if(xfer.status == 4) cancelledXfers = cancelledXfers ++ Vector(xfer)
+                else if(xfer.status == 2) approvedXfers = approvedXfers ++ Vector(xfer)
+                else if(xfer.status == 3) activeXfers = activeXfers ++ Vector(xfer)
+                else if(xfer.status == 4) completeXfers = completeXfers ++ Vector(xfer)
+                else if(xfer.status == 5) cancelledXfers = cancelledXfers ++ Vector(xfer)
               }
-              Ok(views.html.admin.index(SortedMap(1 -> pendingXfers, 2 -> activeXfers, 3 -> completeXfers, 4 -> cancelledXfers)))
+              Ok(views.html.admin.index(SortedMap(1 -> pendingXfers, 2 -> approvedXfers, 3 -> activeXfers, 4 -> completeXfers, 5 -> cancelledXfers)))
             }
             case false => Ok("ko")
           }
