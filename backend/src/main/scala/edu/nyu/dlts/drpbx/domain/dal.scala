@@ -166,32 +166,41 @@ class DAL(override val profile: JdbcProfile) extends DrpbxAcq with Profile {
     true
   }
 
+  def updateFileStatus(req: FileStatusUpdate)(implicit s: Session): Boolean = {
+    val q = for { f <- files if f.id === req.id } yield (f.status)
+    q.update(req.status)
+    true
+  }
+
   def cancelTransfer(req: TransferCancelReq)(implicit s: Session): Boolean = {
     val transferId = UUID.fromString(req.transferId)
     
     val q = for { t <- transfers if t.id === transferId } yield (t.status, t.cancelNote)
-    q.update(4, Some(req.adminNote))
+    q.update(5, Some(req.adminNote))
 
     val q2 = for { f <- files if f.xferId === transferId } yield (f.status)
-    q2.update(4)
+    q2.update(5)
 
     true
   }
 
   def downloadXfer(req: TransferId)(implicit s: Session): Boolean = {
-
+    logger.info(s"DOWNLOADING TRANSFER: $req.id")
     val did = getDonorIdByTransferId(new TransReq(req.id)).get
     val token = getTokenById(new TokenReq(did)).get
     val client = new DbxClient(dbConfig, token)
-    getFilesByTransferId(req).foreach{ i => downloadDbxFile(new FileDownloadReq(UUID.fromString(i.id), client)) }
-    
+    getFilesByTransferId(req).foreach{ i => 
+      downloadDbxFile(new FileDownloadReq(UUID.fromString(i.id), client)) 
+    }
+    updateXferStatus(new TransferStatusUpdate(req.id,4))
     true
   }
 
-  def downloadDbxFile(req: FileDownloadReq)(implicit s: Session): Boolean = {
+  def downloadDbxFile(req: FileDownloadReq)(implicit s: Session): Unit = {
     
     val file = files.filter(_.id === req.fileId).list.head
-    val root = new java.io.File("/tmp", file.xferId.toString).getAbsolutePath
+    updateFileStatus(new FileStatusUpdate(file.id, 3))
+    val root = new java.io.File("/home/dm/dbx", file.xferId.toString).getAbsolutePath
     val dir = new java.io.File(root, file.path)
     dir.mkdirs()
     val path = new java.io.File(dir.getAbsolutePath, file.filename)
@@ -200,6 +209,6 @@ class DAL(override val profile: JdbcProfile) extends DrpbxAcq with Profile {
     val dbxPath = new java.io.File(file.path, file.filename).getAbsolutePath
     val result = req.client.getFile(dbxPath, file.rev, fos)
     logger.info(result.toString)
-    true
+    updateFileStatus(new FileStatusUpdate(file.id, 4))
   }
 }

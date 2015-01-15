@@ -3,3 +3,6 @@ transfer status codes
 2. transfer approve
 3. transfer downloading
 4. transfer complete
+5. transfer cancelled
+
+this needs to be implemented in application .conf

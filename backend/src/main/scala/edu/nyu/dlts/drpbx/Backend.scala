@@ -160,10 +160,11 @@ class Backend(system: ActorSystem ) extends DrpbxBackendStack with JacksonJsonSu
   }
 
   get("/transfer/:id/download") {
-    val pid = params("id")
-    logger.info(s"transfer request $pid")
-    val future = transferActor ? new TransferStatusUpdate(UUID.fromString(params("id")), 3)
+    val xid = new TransferId(UUID.fromString(params("id")))
+    logger.info(s"transfer request $xid.id")
+    val future = transferActor ? new TransferStatusUpdate(xid.id, 3)
     val result = Await.result(future, timeout.duration)
+    dlActor ! xid
     result match {
       case true => { Map("result" -> true) }
       case false => { Map("result" -> false) }

@@ -32,4 +32,5 @@ object DBProtocol {
   case class DonorReq(id: UUID)
   case class TransReq(id: UUID)
   case class FileDownloadReq(fileId: UUID, client: com.dropbox.core.DbxClient)
+  case class FileStatusUpdate(id: UUID, status: Int)
 }
