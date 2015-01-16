@@ -200,7 +200,7 @@ class DAL(override val profile: JdbcProfile) extends DrpbxAcq with Profile {
     
     val file = files.filter(_.id === req.fileId).list.head
     updateFileStatus(new FileStatusUpdate(file.id, 3))
-    val root = new java.io.File("/home/dm/dbx", file.xferId.toString).getAbsolutePath
+    val root = new java.io.File(conf.getString("store.loc"), file.xferId.toString).getAbsolutePath
     val dir = new java.io.File(root, file.path)
     dir.mkdirs()
     val path = new java.io.File(dir.getAbsolutePath, file.filename)

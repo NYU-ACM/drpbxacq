@@ -1,11 +1,16 @@
 prodDb {
   driver=org.postgresql.Driver 
-  url="jdbc:postgresql://localhost:5432/[dbname]"
+  url="jdbc:postgresql://[server_url]:[port]/[dbname]"
   user=[db user]
   password=[db pass]
 }
 
+
 admin {
   email="[admin email]"
   password=[admin password]
+}
+
+store {
+  loc="[location to write downloaded files]"
 }

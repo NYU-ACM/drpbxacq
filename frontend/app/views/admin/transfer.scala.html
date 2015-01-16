@@ -22,7 +22,11 @@
       	@defining(new SimpleDateFormat("yyyy-MM-dd").format(new Date(xfer.xferDate))){ date =>
           <td>@date</td>
         }
-      	<td>@xfer.status</td>
+      	@if(xfer.status == 1){<td>requested</td>}
+        @if(xfer.status == 2){<td>approved</td>}
+        @if(xfer.status == 3){<td>downloading</td>}
+        @if(xfer.status == 4){<td>complete</td>}
+        @if(xfer.status == 5){<td>cancelled</td>}
       	<td>@xfer.donorNote</td>
     </tbody>
   </table>
@@ -63,7 +67,11 @@
 	        <td>@file.path</td> 
 	        <td>@file.rev</td>
 	      	<td>@file.humanSize</td>
-	      	<td>@file.status</td>
+	      	@if(file.status == 1){<td>requested</td>}
+          @if(file.status == 2){<td>approved</td>}
+          @if(file.status == 3){<td>downloading</td>}
+          @if(file.status == 4){<td>complete</td>}
+          @if(file.status == 5){<td>cancelled</td>}
 	      </tr>
 	    }      	
       </tbody>
@@ -73,6 +81,7 @@
   <br>
   
   <div class="lead">Admin Actions</div>
+  
   @if(xfer.status == 1) {
     <div class="form-dbxentry">
       <h4>approve transfer</h4>
@@ -89,7 +98,7 @@
         <input type="hidden" name="transferId" value="@xfer.id" />
       </form>
     </div>
-    }
+  }
 
   @if(xfer.status == 1 || xfer.status == 2) {
     <br>
@@ -104,10 +113,6 @@
         <input type="hidden" name="transferId" value="@xfer.id" />
       </form>
     </div>   
-  }
-
-    @if(xfer.status == 1 || xfer.status == 2) {
-    <br>
     <div class="form-dbxentry">
       <h4>download transfer</h4>
       <form method="post" action="/transfer/@xfer.id/download" class="form-inline">
